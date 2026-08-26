@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Whatsit Swap</title>
+<meta name="description" content="A trading table for weird, random, one-of-a-kind things.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A4%9D%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:ital,wght@0,400;0,700;0,900;1,400&display=swap">
+<style>
+:root{
+  --ground:#F2EDF9; --surface:#FFFFFF; --felt:#E7DCF5; --sunk:#EDE4F7;
+  --ink:#2A1B3D; --ink-2:#6E5C84; --line:#DACBEB;
+  --yes:#0FAF7E; --yes-soft:#D9F5EC;
+  --no:#F0455F;
+  --gold:#F2A81C; --pop:#7A3BE0;
+  --shadow:0 2px 0 #DACBEB, 0 6px 14px rgba(42,27,61,.10);
+  --r-common:#8E7EA9; --r-rare:#2E8FE0; --r-epic:#9B44E0; --r-legend:#F2A81C; --r-oneof:#F0455F;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#160F26; --surface:#241A3A; --felt:#1E1533; --sunk:#2C2148;
+    --ink:#F7F1FF; --ink-2:#B0A0CA; --line:#3D2E5C;
+    --yes:#2BD3A0; --yes-soft:#123A30;
+    --no:#FF6B80;
+    --gold:#FFC53D; --pop:#B487FF;
+    --shadow:0 2px 0 #3D2E5C, 0 6px 16px rgba(0,0,0,.4);
+    --r-common:#9C8CB8; --r-rare:#5AB0F5; --r-epic:#C07CFF; --r-legend:#FFC53D; --r-oneof:#FF6B80;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#160F26; --surface:#241A3A; --felt:#1E1533; --sunk:#2C2148;
+  --ink:#F7F1FF; --ink-2:#B0A0CA; --line:#3D2E5C;
+  --yes:#2BD3A0; --yes-soft:#123A30;
+  --no:#FF6B80;
+  --gold:#FFC53D; --pop:#B487FF;
+  --shadow:0 2px 0 #3D2E5C, 0 6px 16px rgba(0,0,0,.4);
+  --r-common:#9C8CB8; --r-rare:#5AB0F5; --r-epic:#C07CFF; --r-legend:#FFC53D; --r-oneof:#FF6B80;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:Nunito, ui-rounded, "Segoe UI", system-ui, sans-serif;
+  -webkit-tap-highlight-color:transparent;
+}
+.wrap{max-width:600px; margin:0 auto; padding:12px 14px 28px; display:flex; flex-direction:column; gap:12px}
+
+/* ---------- top bar ---------- */
+.bar{display:flex; align-items:center; gap:10px}
+.logo{
+  font-family:"Bagel Fat One", Nunito, cursive; font-size:clamp(26px,7vw,36px);
+  line-height:1; letter-spacing:.01em; margin:0; font-weight:400;
+  background:linear-gradient(100deg,var(--pop),var(--no) 60%,var(--gold));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.bar .spacer{flex:1}
+.icon-btn{
+  border:2px solid var(--line); background:var(--surface); color:var(--ink);
+  width:38px; height:38px; border-radius:12px; font-size:16px; cursor:pointer;
+  display:grid; place-items:center; box-shadow:var(--shadow); transition:transform .12s; flex:none;
+}
+.icon-btn:active{transform:translateY(2px)}
+button:focus-visible, input:focus-visible, .avatar:focus-visible{outline:3px solid var(--pop); outline-offset:2px}
+
+/* ---------- trader panel ---------- */
+.panel{
+  background:var(--surface); border:2px solid var(--line); border-radius:18px;
+  padding:10px 12px 12px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:9px;
+}
+.phead{display:flex; align-items:center; gap:8px}
+.who{
+  font-weight:900; font-size:16px; border:none; background:transparent; color:var(--ink);
+  font-family:inherit; width:9ch; padding:3px 6px; border-radius:8px; min-width:0;
+}
+.who:hover{background:var(--sunk)}
+.avatar{
+  width:32px; height:32px; border-radius:10px; display:grid; place-items:center; font-size:17px;
+  background:var(--sunk); flex:none; border:none; cursor:pointer; padding:0;
+}
+.count{font-size:11px; font-weight:900; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-2)}
+.phead .spacer{flex:1}
+.find{
+  border:2px solid var(--line); background:var(--sunk); color:var(--ink); font-family:inherit;
+  font-weight:900; font-size:12px; padding:7px 11px; border-radius:11px; cursor:pointer; white-space:nowrap;
+}
+.find:active{transform:translateY(1px)}
+
+.stash{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(94px,1fr)); gap:8px;
+  max-height:214px; overflow-y:auto; padding:3px; margin:0 -3px;
+}
+.empty{
+  grid-column:1/-1; text-align:center; color:var(--ink-2); font-size:13px; font-style:italic;
+  padding:16px 8px; margin:0;
+}
+
+/* ---------- cards ---------- */
+.card{
+  position:relative; text-align:left; cursor:pointer; font-family:inherit; color:var(--ink);
+  background:var(--surface); border:2px solid var(--line); border-top-width:5px; border-radius:13px;
+  padding:7px 8px 8px; display:flex; flex-direction:column; gap:2px; min-width:0;
+  animation:pop .22s cubic-bezier(.2,1.5,.5,1) both; transition:transform .1s;
+}
+.card:hover{transform:translateY(-2px)}
+.card:active{transform:translateY(1px)}
+.card .emo{font-size:24px; line-height:1.1}
+.card .nm{font-weight:900; font-size:11.5px; line-height:1.2; overflow-wrap:anywhere}
+.card .qk{font-size:9.5px; font-style:italic; color:var(--ink-2); line-height:1.25}
+.card .pips{font-size:8.5px; letter-spacing:.12em; font-weight:900; text-transform:uppercase; margin-top:1px}
+.card[data-r="common"]{border-top-color:var(--r-common)} .card[data-r="common"] .pips{color:var(--r-common)}
+.card[data-r="rare"]{border-top-color:var(--r-rare)} .card[data-r="rare"] .pips{color:var(--r-rare)}
+.card[data-r="epic"]{border-top-color:var(--r-epic)} .card[data-r="epic"] .pips{color:var(--r-epic)}
+.card[data-r="legendary"]{border-top-color:var(--r-legend); box-shadow:0 0 0 2px rgba(242,168,28,.24)}
+.card[data-r="legendary"] .pips{color:var(--r-legend)}
+.card[data-r="one-of-a-kind"]{border-top-color:var(--r-oneof); box-shadow:0 0 0 2px rgba(240,69,95,.26)}
+.card[data-r="one-of-a-kind"] .pips{color:var(--r-oneof)}
+.card .sn{
+  position:absolute; top:5px; right:7px; font-size:8px; font-weight:900; color:var(--ink-2);
+  opacity:.75; font-variant-numeric:tabular-nums;
+}
+@keyframes pop{from{opacity:0; transform:scale(.8) translateY(6px)} to{opacity:1; transform:none}}
+
+/* ---------- the table ---------- */
+.table{
+  background:var(--felt); border:3px dashed var(--line); border-radius:22px; padding:12px;
+  display:flex; flex-direction:column; gap:10px;
+  background-image:radial-gradient(var(--line) 1px, transparent 1.4px);
+  background-size:16px 16px;
+}
+.half{display:flex; flex-direction:column; gap:8px}
+.slots{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(94px,1fr)); gap:8px;
+  min-height:76px; align-content:start;
+  background:var(--surface); border-radius:14px; padding:8px;
+}
+.slots .empty{font-size:12px; padding:13px 6px}
+.acts{display:flex; gap:8px}
+.act{
+  flex:1; border:2px solid var(--line); border-radius:13px; padding:10px 6px; cursor:pointer;
+  font-family:inherit; font-weight:900; font-size:13px; background:var(--surface); color:var(--ink);
+  display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:var(--shadow);
+  transition:transform .1s;
+}
+.act:active{transform:translateY(2px)}
+.act .g{font-size:16px; line-height:1}
+.act.no{color:var(--no); border-color:var(--no)}
+.act.yes{color:var(--yes); border-color:var(--yes)}
+.act.yes[aria-pressed="true"]{background:var(--yes); color:#FFFFFF; border-color:var(--yes)}
+.act:disabled{opacity:.45; cursor:not-allowed}
+
+.divider{display:flex; align-items:center; gap:10px}
+.divider .rule{flex:1; height:3px; border-radius:3px; background:var(--line)}
+.cancel{
+  border:2px solid var(--line); background:var(--surface); color:var(--ink-2); font-family:inherit;
+  font-weight:900; font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+  padding:8px 13px; border-radius:999px; cursor:pointer; box-shadow:var(--shadow); white-space:nowrap;
+}
+.cancel:active{transform:translateY(2px)}
+
+.status{
+  text-align:center; font-weight:900; font-size:13.5px; min-height:20px; color:var(--ink-2);
+  padding:0 4px; margin:0; text-wrap:balance;
+}
+.status.go{color:var(--yes)} .status.stop{color:var(--no)}
+.status.shake{animation:shake .34s}
+@keyframes shake{25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+
+.foot{text-align:center; font-size:11.5px; color:var(--ink-2); line-height:1.7; margin:0}
+.foot b{color:var(--ink)}
+
+canvas#fx{position:fixed; inset:0; pointer-events:none; z-index:50}
+.flash{animation:flash .6s}
+@keyframes flash{0%{background-color:var(--yes-soft)}100%{background-color:var(--felt)}}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<div class="wrap">
+  <div class="bar">
+    <h1 class="logo">Whatsit Swap</h1>
+    <span class="spacer"></span>
+    <button class="icon-btn" id="snd" title="Sound on or off" aria-label="Sound on or off">&#128266;</button>
+    <button class="icon-btn" id="rst" title="Start over with new stuff" aria-label="Start over with new stuff">&#8635;</button>
+  </div>
+
+  <section class="panel">
+    <div class="phead">
+      <button class="avatar" id="av1" title="Tap to change" aria-label="Change top trader's picture">&#129412;</button>
+      <input class="who" id="nm1" value="Bee" maxlength="10" aria-label="Top trader name">
+      <span class="spacer"></span>
+      <span class="count" id="ct1"></span>
+      <button class="find" data-find="1">&#10024; Find stuff</button>
+    </div>
+    <div class="stash" id="st1"></div>
+  </section>
+
+  <section class="table" id="table">
+    <div class="half">
+      <div class="slots" id="of1"></div>
+      <div class="acts">
+        <button class="act no" data-more="1"><span class="g">&#10007;</span> More!</button>
+        <button class="act yes" data-ready="1" aria-pressed="false"><span class="g">&#10003;</span> <span class="lbl">Ready</span></button>
+      </div>
+    </div>
+
+    <div class="divider">
+      <span class="rule"></span>
+      <button class="cancel" id="cancel">&#10007; Cancel trade</button>
+      <span class="rule"></span>
+    </div>
+
+    <div class="half">
+      <div class="acts">
+        <button class="act no" data-more="0"><span class="g">&#10007;</span> More!</button>
+        <button class="act yes" data-ready="0" aria-pressed="false"><span class="g">&#10003;</span> <span class="lbl">Ready</span></button>
+      </div>
+      <div class="slots" id="of0"></div>
+    </div>
+  </section>
+
+  <p class="status" id="status" role="status">Tap your stuff to put it on the table.</p>
+
+  <section class="panel">
+    <div class="phead">
+      <button class="avatar" id="av0" title="Tap to change" aria-label="Change bottom trader's picture">&#129418;</button>
+      <input class="who" id="nm0" value="Aria" maxlength="10" aria-label="Bottom trader name">
+      <span class="spacer"></span>
+      <span class="count" id="ct0"></span>
+      <button class="find" data-find="0">&#10024; Find stuff</button>
+    </div>
+    <div class="stash" id="st0"></div>
+  </section>
+
+  <p class="foot">
+    <b>&#10007; More!</b> means "that's not enough yet, add something" &nbsp;&middot;&nbsp;
+    <b>&#10003; Ready</b> means "I'm happy with this trade"<br>
+    Both traders happy &rarr; the stuff swaps.
+  </p>
+</div>
+
+<script>
+/* ============ the stuff generator ============ */
+var ADJ = ["Slightly Haunted","Extremely Squishy","Suspiciously Damp","Upside-Down","Mostly Invisible","Left-Handed","Emotionally Complex","Very Loud","Pocket-Sized","Ancient","Off-Brand","Discontinued","Gently Used","Aggressively Purple","Mildly Magnetic","Slow-Motion","Backwards","Screaming","Politely Cursed","Half-Melted","Sentient","Free-Range","Hand-Knitted","Unpredictable","Extra Crunchy","Slippery","Reversible","Overqualified","Undercooked","Time-Traveling","Sleepy","Dramatic","Second-Hand","Enormous","Microscopic","Glow-in-the-Dark","Two-Headed","Rubbery","Slightly Soggy","World-Famous"];
+
+var NOUN = [
+  ["Rubber Duck","🦆"],["Sock","🧦"],["Doorknob","🚪"],["Marble","🔮"],
+  ["Spoon","🥄"],["Ghost","👻"],["Pebble","🪨"],["Traffic Cone","🚧"],
+  ["Pickle","🥒"],["Trophy","🏆"],["Cactus","🌵"],["Umbrella","☂️"],
+  ["Bouncy Ball","🏐"],["Snail","🐌"],["Balloon","🎈"],["Moustache","👞"],
+  ["Lava Lamp","🧪"],["Yo-Yo","🪀"],["Tooth","🦷"],["Wig","💇"],
+  ["Boot","🥾"],["Lightbulb","💡"],["Cloud","☁️"],["Mushroom","🍄"],
+  ["Dinosaur","🦖"],["Paperclip","📎"],["Bathtub","🛁"],["Chicken","🐔"],
+  ["Wizard Hat","🎩"],["Sandwich","🥪"],["Robot Arm","🤖"],["Skateboard","🛹"],
+  ["Whistle","🎺"],["Jellyfish","🪼"],["Doorbell","🔔"],["Sticker","⭐"],
+  ["Bucket","🪣"],["Frying Pan","🍳"],["Compass","🧭"],["Cupcake","🧁"],
+  ["Ladder","🪜"],["Penguin","🐧"],["Crystal","💎"],["Banana","🍌"],
+  ["Toaster","🍞"],["Teapot","🫖"],["Beetle","🪲"],["Puzzle Piece","🧩"]
+];
+
+var QUIRK = ["Smells faintly of Tuesday.","Hums when nobody is looking.","Came free with a sandwich.","Belonged to a famous goose.","Only works on Wednesdays.","Slightly warm. Nobody knows why.","Has opinions about soup.","Found at the bottom of a lake.","Refuses to be photographed.","Makes a boing noise. Always.","Older than your grandma's grandma.","Definitely not haunted. Probably.","Purrs if you are nice to it.","Was once a hat.","Weighs exactly one hamster.","Glows a bit in the dark.","Cannot be folded. Do not try.","Has a tiny door on the back.","Screams politely when dropped.","Tastes like the colour blue.","Voted Most Likely To Roll Away.","Comes with a very small friend.","Buzzes when a dog walks past.","Legally counts as a snack.","Survived three washing machines.","Ticks, but is not a clock.","Smells like a new notebook.","Slightly bigger on the inside.","Was a birthday present. Twice.","Nobody knows what it does.","Once won an argument.","Best friends with a spoon."];
+
+var RARITY = [["common",55],["rare",25],["epic",13],["legendary",5],["one-of-a-kind",2]];
+var PIPS = {"common":"★","rare":"★★","epic":"★★★","legendary":"★★★★","one-of-a-kind":"★★★★★"};
+var AVS = ["🦊","🦄","🦖","🐰","🐸","🐙","🐼","🐝"];
+
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+function rollRarity(){
+  var n = Math.random()*100, acc = 0;
+  for (var i=0;i<RARITY.length;i++){ acc += RARITY[i][1]; if (n < acc) return RARITY[i][0]; }
+  return "common";
+}
+var serial = 1;
+function makeThing(){
+  var n = pick(NOUN);
+  return {
+    id: "t" + serial + "-" + Math.random().toString(36).slice(2,7),
+    sn: String(serial++).padStart(4,"0"),
+    label: pick(ADJ) + " " + n[0],
+    emo: n[1],
+    quirk: pick(QUIRK),
+    rarity: rollRarity()
+  };
+}
+
+/* ============ state ============ */
+var KEY = "whatsit-swap-v1";
+var S;
+function fresh(){
+  return {
+    serial: 1, sound: true,
+    p: [
+      {name:"Aria", av:AVS[0], items:[], offer:[], ready:false},
+      {name:"Bee",  av:AVS[1], items:[], offer:[], ready:false}
+    ]
+  };
+}
+function stock(){
+  for (var i=0;i<2;i++) for (var k=0;k<6;k++) S.p[i].items.push(makeThing());
+}
+function load(){
+  try{
+    var raw = localStorage.getItem(KEY);
+    if (raw){
+      var d = JSON.parse(raw);
+      if (d && d.p && d.p.length === 2 && d.p[0].items && d.p[1].items){
+        S = d; serial = d.serial || 1;
+        for (var i=0;i<2;i++){ S.p[i].offer = S.p[i].offer || []; }
+        return;
+      }
+    }
+  }catch(e){}
+  S = fresh(); stock();
+}
+function save(){
+  try{ S.serial = serial; localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
+}
+
+/* ============ sound ============ */
+var ac = null;
+function beep(freq, dur, type){
+  if (!S.sound) return;
+  try{
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    ac = ac || new AC();
+    if (ac.state === "suspended") ac.resume();
+    var o = ac.createOscillator(), g = ac.createGain();
+    o.type = type || "triangle"; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.13, ac.currentTime + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur);
+    o.connect(g); g.connect(ac.destination);
+    o.start(); o.stop(ac.currentTime + dur + 0.02);
+  }catch(e){}
+}
+function sTap(){ beep(520,.09); }
+function sBack(){ beep(330,.09); }
+function sMore(){ beep(300,.12,"square"); setTimeout(function(){ beep(230,.16,"square"); },90); }
+function sYes(){ beep(760,.12); }
+function sTrade(){ [523,659,784,1047].forEach(function(f,i){ setTimeout(function(){ beep(f,.17); }, i*95); }); }
+function sFind(){ [660,880].forEach(function(f,i){ setTimeout(function(){ beep(f,.1); }, i*70); }); }
+
+/* ============ render ============ */
+function $(id){ return document.getElementById(id); }
+var statusEl = $("status");
+
+function esc(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function cardHTML(it, where){
+  return '<button class="card" data-r="' + esc(it.rarity) + '" data-id="' + esc(it.id) + '" data-where="' + where + '" '
+    + 'title="' + (where === "stash" ? "Put it on the table" : "Take it back") + '">'
+    + '<span class="sn">#' + esc(it.sn) + '</span>'
+    + '<span class="emo">' + esc(it.emo) + '</span>'
+    + '<span class="nm">' + esc(it.label) + '</span>'
+    + '<span class="qk">' + esc(it.quirk) + '</span>'
+    + '<span class="pips">' + PIPS[it.rarity] + '</span>'
+    + '</button>';
+}
+
+function render(){
+  for (var i=0;i<2;i++){
+    var p = S.p[i];
+    if ($("nm"+i) !== document.activeElement) $("nm"+i).value = p.name;
+    $("av"+i).textContent = p.av;
+    $("ct"+i).textContent = p.items.length + " thing" + (p.items.length === 1 ? "" : "s");
+    $("st"+i).innerHTML = p.items.length
+      ? p.items.map(function(it){ return cardHTML(it,"stash"); }).join("")
+      : '<p class="empty">Stash is empty &mdash; tap <b>Find stuff</b>.</p>';
+    $("of"+i).innerHTML = p.offer.length
+      ? p.offer.map(function(it){ return cardHTML(it,"offer"); }).join("")
+      : '<p class="empty">' + esc(p.name) + ' has not put anything down yet.</p>';
+    var rb = document.querySelector('[data-ready="' + i + '"]');
+    rb.setAttribute("aria-pressed", p.ready ? "true" : "false");
+    rb.querySelector(".lbl").textContent = p.ready ? "Happy!" : "Ready";
+    rb.disabled = (S.p[0].offer.length === 0 && S.p[1].offer.length === 0);
+  }
+  $("snd").textContent = S.sound ? "🔊" : "🔇";
+  save();
+}
+
+function say(msg, cls){
+  statusEl.textContent = msg;
+  statusEl.className = "status " + (cls || "");
+  if (cls === "stop"){
+    statusEl.classList.remove("shake");
+    void statusEl.offsetWidth;
+    statusEl.classList.add("shake");
+  }
+}
+function unready(){ S.p[0].ready = false; S.p[1].ready = false; }
+
+/* ============ actions ============ */
+function moveCard(id, where){
+  for (var i=0;i<2;i++){
+    var p = S.p[i];
+    var from = (where === "stash") ? p.items : p.offer;
+    var to   = (where === "stash") ? p.offer : p.items;
+    for (var k=0;k<from.length;k++){
+      if (from[k].id === id){
+        to.push(from.splice(k,1)[0]);
+        unready();
+        if (where === "stash"){ sTap(); say(p.name + " put something on the table."); }
+        else { sBack(); say(p.name + " took something back."); }
+        render();
+        return;
+      }
+    }
+  }
+}
+
+function tryTrade(){
+  if (!S.p[0].ready || !S.p[1].ready) return false;
+  var a = S.p[0], b = S.p[1];
+  var n = a.offer.length + b.offer.length;
+  a.items = a.items.concat(b.offer);
+  b.items = b.items.concat(a.offer);
+  a.offer = []; b.offer = []; unready();
+  render();
+  sTrade(); confetti();
+  var t = $("table"); t.classList.remove("flash"); void t.offsetWidth; t.classList.add("flash");
+  say("🤝 Traded! " + n + " thing" + (n === 1 ? "" : "s") + " swapped. Check your stash!", "go");
+  return true;
+}
+
+document.addEventListener("click", function(e){
+  var card = e.target.closest(".card");
+  if (card){ moveCard(card.getAttribute("data-id"), card.getAttribute("data-where")); return; }
+
+  var more = e.target.closest("[data-more]");
+  if (more){
+    var mi = +more.getAttribute("data-more");
+    unready(); render(); sMore();
+    say("👉 " + S.p[mi].name + " wants more! Add something, " + S.p[1-mi].name + ".", "stop");
+    return;
+  }
+
+  var rdy = e.target.closest("[data-ready]");
+  if (rdy){
+    var ri = +rdy.getAttribute("data-ready"), p = S.p[ri];
+    p.ready = !p.ready;
+    render();
+    if (!p.ready){ sBack(); say(p.name + " is not happy any more."); return; }
+    sYes();
+    if (!tryTrade()) say("✅ " + p.name + " is happy. Waiting on " + S.p[1-ri].name + "...", "go");
+    return;
+  }
+
+  if (e.target.closest("#cancel")){
+    if (!S.p[0].offer.length && !S.p[1].offer.length){ say("Nothing on the table to cancel."); return; }
+    for (var i=0;i<2;i++){ S.p[i].items = S.p[i].items.concat(S.p[i].offer); S.p[i].offer = []; }
+    unready(); render(); sBack();
+    say("Trade cancelled. Everybody got their stuff back.", "stop");
+    return;
+  }
+
+  var find = e.target.closest("[data-find]");
+  if (find){
+    var fi = +find.getAttribute("data-find");
+    var howMany = 1 + Math.floor(Math.random()*2), first = null;
+    for (var k=0;k<howMany;k++){ var t2 = makeThing(); S.p[fi].items.push(t2); if (!first) first = t2; }
+    render(); sFind();
+    say("✨ " + S.p[fi].name + " found a " + first.label + "!" + (howMany > 1 ? " (and one more thing)" : ""));
+    return;
+  }
+
+  if (e.target.closest("#snd")){ S.sound = !S.sound; render(); if (S.sound) sTap(); return; }
+
+  if (e.target.closest("#rst")){
+    if (!confirm("Start over? Everybody gets brand new stuff.")) return;
+    var names = [S.p[0].name, S.p[1].name];
+    S = fresh(); serial = 1;
+    S.p[0].name = names[0]; S.p[1].name = names[1];
+    S.p[0].av = pick(AVS);
+    S.p[1].av = pick(AVS.filter(function(a){ return a !== S.p[0].av; }));
+    stock(); render(); sFind();
+    say("Brand new stuff for everybody. Start trading!");
+    return;
+  }
+
+  var av = e.target.closest(".avatar");
+  if (av){
+    var ai = +av.id.slice(2);
+    S.p[ai].av = AVS[(AVS.indexOf(S.p[ai].av) + 1) % AVS.length];
+    render(); sTap();
+  }
+});
+
+for (var i=0;i<2;i++){
+  (function(i){
+    $("nm"+i).addEventListener("input", function(e){
+      S.p[i].name = e.target.value.trim() || (i ? "Trader 2" : "Trader 1");
+      save();
+    });
+    $("nm"+i).addEventListener("blur", render);
+  })(i);
+}
+
+/* ============ confetti ============ */
+var cv = $("fx"), cx = cv.getContext("2d");
+var bits = [], raf = 0;
+var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function sizeCanvas(){ cv.width = window.innerWidth; cv.height = window.innerHeight; }
+window.addEventListener("resize", sizeCanvas);
+sizeCanvas();
+
+function confetti(){
+  if (reduce) return;
+  var cols = ["#F0455F","#0FAF7E","#F2A81C","#7A3BE0","#2E8FE0"];
+  bits = [];
+  for (var i=0;i<90;i++){
+    bits.push({
+      x: Math.random()*cv.width, y: cv.height*0.45 + Math.random()*70,
+      vx: (Math.random()-0.5)*7, vy: -7 - Math.random()*8,
+      s: 5 + Math.random()*7, c: pick(cols),
+      r: Math.random()*6, vr: (Math.random()-0.5)*0.35, life: 1
+    });
+  }
+  cancelAnimationFrame(raf);
+  raf = requestAnimationFrame(tick);
+}
+function tick(){
+  cx.clearRect(0,0,cv.width,cv.height);
+  var alive = false;
+  for (var i=0;i<bits.length;i++){
+    var b = bits[i];
+    b.vy += 0.32; b.x += b.vx; b.y += b.vy; b.r += b.vr; b.life -= 0.009;
+    if (b.life > 0 && b.y < cv.height + 30){
+      alive = true;
+      cx.save(); cx.translate(b.x, b.y); cx.rotate(b.r);
+      cx.globalAlpha = Math.max(0, b.life); cx.fillStyle = b.c;
+      cx.fillRect(-b.s/2, -b.s/2, b.s, b.s*0.62);
+      cx.restore();
+    }
+  }
+  if (alive){ raf = requestAnimationFrame(tick); }
+  else { cx.clearRect(0,0,cv.width,cv.height); raf = 0; }
+}
+
+load();
+render();
+</script>
+</body>
+</html>
