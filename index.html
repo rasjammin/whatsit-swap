@@ -470,7 +470,8 @@ document.addEventListener("click", function(e){
     var howMany = 1 + Math.floor(Math.random()*2), first = null;
     for (var k=0;k<howMany;k++){ var t2 = makeThing(); S.p[fi].items.push(t2); if (!first) first = t2; }
     render(); sFind();
-    say("✨ " + S.p[fi].name + " found a " + first.label + "!" + (howMany > 1 ? " (and one more thing)" : ""));
+    var article = /^[AEIOU]/.test(first.label) ? "an " : "a ";
+    say("✨ " + S.p[fi].name + " found " + article + first.label + "!" + (howMany > 1 ? " (and one more thing)" : ""));
     return;
   }
 
