@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 <title>Whatsit Swap</title>
 <meta name="description" content="A trading table for weird, random, one-of-a-kind things.">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A4%9D%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,104 +14,119 @@
 :root{
   --ground:#F2EDF9; --surface:#FFFFFF; --felt:#E7DCF5; --sunk:#EDE4F7;
   --ink:#2A1B3D; --ink-2:#6E5C84; --line:#DACBEB;
-  --yes:#0FAF7E; --yes-soft:#D9F5EC;
+  --go:#0FAF7E; --go-soft:#D9F5EC;
+  --fin:#2E7BE0; --fin-soft:#DAEAFB;
   --no:#F0455F;
   --gold:#F2A81C; --pop:#7A3BE0;
-  --shadow:0 2px 0 #DACBEB, 0 6px 14px rgba(42,27,61,.10);
+  --shadow:0 2px 0 #DACBEB, 0 5px 12px rgba(42,27,61,.10);
   --r-common:#8E7EA9; --r-rare:#2E8FE0; --r-epic:#9B44E0; --r-legend:#F2A81C; --r-oneof:#F0455F;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --ground:#160F26; --surface:#241A3A; --felt:#1E1533; --sunk:#2C2148;
     --ink:#F7F1FF; --ink-2:#B0A0CA; --line:#3D2E5C;
-    --yes:#2BD3A0; --yes-soft:#123A30;
-    --no:#FF6B80;
+    --go:#19C994; --go-soft:#123A30;
+    --fin:#3E90F5; --fin-soft:#12294A;
+    --no:#FF5C73;
     --gold:#FFC53D; --pop:#B487FF;
-    --shadow:0 2px 0 #3D2E5C, 0 6px 16px rgba(0,0,0,.4);
+    --shadow:0 2px 0 #3D2E5C, 0 5px 14px rgba(0,0,0,.4);
     --r-common:#9C8CB8; --r-rare:#5AB0F5; --r-epic:#C07CFF; --r-legend:#FFC53D; --r-oneof:#FF6B80;
   }
 }
 :root[data-theme="dark"]{
   --ground:#160F26; --surface:#241A3A; --felt:#1E1533; --sunk:#2C2148;
   --ink:#F7F1FF; --ink-2:#B0A0CA; --line:#3D2E5C;
-  --yes:#2BD3A0; --yes-soft:#123A30;
-  --no:#FF6B80;
+  --go:#19C994; --go-soft:#123A30;
+  --fin:#3E90F5; --fin-soft:#12294A;
+  --no:#FF5C73;
   --gold:#FFC53D; --pop:#B487FF;
-  --shadow:0 2px 0 #3D2E5C, 0 6px 16px rgba(0,0,0,.4);
+  --shadow:0 2px 0 #3D2E5C, 0 5px 14px rgba(0,0,0,.4);
   --r-common:#9C8CB8; --r-rare:#5AB0F5; --r-epic:#C07CFF; --r-legend:#FFC53D; --r-oneof:#FF6B80;
 }
 
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
+html,body{height:100%}
 body{
   margin:0; background:var(--ground); color:var(--ink);
   font-family:Nunito, ui-rounded, "Segoe UI", system-ui, sans-serif;
-  -webkit-tap-highlight-color:transparent;
+  -webkit-tap-highlight-color:transparent; overscroll-behavior:none;
 }
-.wrap{max-width:600px; margin:0 auto; padding:12px 14px 28px; display:flex; flex-direction:column; gap:12px}
+
+/* ---- full-screen shell: nothing scrolls except the two stashes ---- */
+.app{
+  height:100vh; height:100dvh;
+  max-width:560px; margin:0 auto;
+  padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+  padding-top:calc(6px + env(safe-area-inset-top));
+  display:flex; flex-direction:column; gap:6px; overflow:hidden;
+}
 
 /* ---------- top bar ---------- */
-.bar{display:flex; align-items:center; gap:10px}
+.bar{display:flex; align-items:center; gap:7px; flex:none}
 .logo{
-  font-family:"Bagel Fat One", Nunito, cursive; font-size:clamp(26px,7vw,36px);
-  line-height:1; letter-spacing:.01em; margin:0; font-weight:400;
+  font-family:"Bagel Fat One", Nunito, cursive; font-size:clamp(19px,5.4vw,26px);
+  line-height:1.1; margin:0; font-weight:400; white-space:nowrap;
   background:linear-gradient(100deg,var(--pop),var(--no) 60%,var(--gold));
   -webkit-background-clip:text; background-clip:text; color:transparent;
 }
 .bar .spacer{flex:1}
 .icon-btn{
   border:2px solid var(--line); background:var(--surface); color:var(--ink);
-  width:38px; height:38px; border-radius:12px; font-size:16px; cursor:pointer;
-  display:grid; place-items:center; box-shadow:var(--shadow); transition:transform .12s; flex:none;
+  width:31px; height:31px; border-radius:10px; font-size:13px; cursor:pointer;
+  display:grid; place-items:center; box-shadow:var(--shadow); flex:none; padding:0;
 }
-.icon-btn:active{transform:translateY(2px)}
-button:focus-visible, input:focus-visible, .avatar:focus-visible{outline:3px solid var(--pop); outline-offset:2px}
+.icon-btn:active{transform:translateY(1px)}
+button:focus-visible, input:focus-visible{outline:3px solid var(--pop); outline-offset:2px}
 
 /* ---------- trader panel ---------- */
 .panel{
-  background:var(--surface); border:2px solid var(--line); border-radius:18px;
-  padding:10px 12px 12px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:9px;
+  background:var(--surface); border:2px solid var(--line); border-radius:15px;
+  padding:6px 8px 7px; box-shadow:var(--shadow);
+  display:flex; flex-direction:column; gap:5px;
+  flex:1 1 0; min-height:92px;
 }
-.phead{display:flex; align-items:center; gap:8px}
+.phead{display:flex; align-items:center; gap:6px; flex:none}
 .who{
-  font-weight:900; font-size:16px; border:none; background:transparent; color:var(--ink);
-  font-family:inherit; width:9ch; padding:3px 6px; border-radius:8px; min-width:0;
+  font-weight:900; font-size:14px; border:none; background:transparent; color:var(--ink);
+  font-family:inherit; width:8ch; padding:2px 5px; border-radius:7px; min-width:0;
 }
 .who:hover{background:var(--sunk)}
 .avatar{
-  width:32px; height:32px; border-radius:10px; display:grid; place-items:center; font-size:17px;
+  width:27px; height:27px; border-radius:9px; display:grid; place-items:center; font-size:15px;
   background:var(--sunk); flex:none; border:none; cursor:pointer; padding:0;
 }
-.count{font-size:11px; font-weight:900; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-2)}
+.count{font-size:9.5px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-2); white-space:nowrap}
 .phead .spacer{flex:1}
 .find{
   border:2px solid var(--line); background:var(--sunk); color:var(--ink); font-family:inherit;
-  font-weight:900; font-size:12px; padding:7px 11px; border-radius:11px; cursor:pointer; white-space:nowrap;
+  font-weight:900; font-size:11px; padding:5px 9px; border-radius:9px; cursor:pointer; white-space:nowrap;
 }
 .find:active{transform:translateY(1px)}
 
 .stash{
-  display:grid; grid-template-columns:repeat(auto-fill,minmax(94px,1fr)); gap:8px;
-  max-height:214px; overflow-y:auto; padding:3px; margin:0 -3px;
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(78px,1fr));
+  gap:6px; align-content:start;
+  flex:1 1 0; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding:2px; margin:0 -2px;
 }
 .empty{
-  grid-column:1/-1; text-align:center; color:var(--ink-2); font-size:13px; font-style:italic;
-  padding:16px 8px; margin:0;
+  grid-column:1/-1; text-align:center; color:var(--ink-2); font-size:11.5px; font-style:italic;
+  padding:10px 6px; margin:0; align-self:center;
 }
 
 /* ---------- cards ---------- */
 .card{
   position:relative; text-align:left; cursor:pointer; font-family:inherit; color:var(--ink);
-  background:var(--surface); border:2px solid var(--line); border-top-width:5px; border-radius:13px;
-  padding:7px 8px 8px; display:flex; flex-direction:column; gap:2px; min-width:0;
-  animation:pop .22s cubic-bezier(.2,1.5,.5,1) both; transition:transform .1s;
+  background:var(--surface); border:2px solid var(--line); border-top-width:4px; border-radius:11px;
+  padding:5px 6px 6px; display:flex; flex-direction:column; gap:1px; min-width:0; height:max-content;
+  animation:pop .2s cubic-bezier(.2,1.5,.5,1) both;
 }
-.card:hover{transform:translateY(-2px)}
 .card:active{transform:translateY(1px)}
-.card .emo{font-size:24px; line-height:1.1}
-.card .nm{font-weight:900; font-size:11.5px; line-height:1.2; overflow-wrap:anywhere}
-.card .qk{font-size:9.5px; font-style:italic; color:var(--ink-2); line-height:1.25}
-.card .pips{font-size:8.5px; letter-spacing:.12em; font-weight:900; text-transform:uppercase; margin-top:1px}
+.card .emo{font-size:19px; line-height:1.1}
+.card .nm{font-weight:900; font-size:10px; line-height:1.18; overflow-wrap:anywhere}
+.card .qk{font-size:8.5px; font-style:italic; color:var(--ink-2); line-height:1.22}
+.card .pips{font-size:7.5px; letter-spacing:.1em; font-weight:900; margin-top:1px}
 .card[data-r="common"]{border-top-color:var(--r-common)} .card[data-r="common"] .pips{color:var(--r-common)}
 .card[data-r="rare"]{border-top-color:var(--r-rare)} .card[data-r="rare"] .pips{color:var(--r-rare)}
 .card[data-r="epic"]{border-top-color:var(--r-epic)} .card[data-r="epic"] .pips{color:var(--r-epic)}
@@ -119,63 +135,96 @@ button:focus-visible, input:focus-visible, .avatar:focus-visible{outline:3px sol
 .card[data-r="one-of-a-kind"]{border-top-color:var(--r-oneof); box-shadow:0 0 0 2px rgba(240,69,95,.26)}
 .card[data-r="one-of-a-kind"] .pips{color:var(--r-oneof)}
 .card .sn{
-  position:absolute; top:5px; right:7px; font-size:8px; font-weight:900; color:var(--ink-2);
-  opacity:.75; font-variant-numeric:tabular-nums;
+  position:absolute; top:4px; right:5px; font-size:7px; font-weight:900; color:var(--ink-2);
+  opacity:.7; font-variant-numeric:tabular-nums;
 }
-@keyframes pop{from{opacity:0; transform:scale(.8) translateY(6px)} to{opacity:1; transform:none}}
+@keyframes pop{from{opacity:0; transform:scale(.82)} to{opacity:1; transform:none}}
 
 /* ---------- the table ---------- */
 .table{
-  background:var(--felt); border:3px dashed var(--line); border-radius:22px; padding:12px;
-  display:flex; flex-direction:column; gap:10px;
-  background-image:radial-gradient(var(--line) 1px, transparent 1.4px);
-  background-size:16px 16px;
+  flex:none; background:var(--felt); border:3px dashed var(--line); border-radius:17px; padding:7px;
+  display:flex; flex-direction:column; gap:6px;
+  background-image:radial-gradient(var(--line) 1px, transparent 1.4px); background-size:15px 15px;
 }
-.half{display:flex; flex-direction:column; gap:8px}
+.half{display:flex; flex-direction:column; gap:6px}
 .slots{
-  display:grid; grid-template-columns:repeat(auto-fill,minmax(94px,1fr)); gap:8px;
-  min-height:76px; align-content:start;
-  background:var(--surface); border-radius:14px; padding:8px;
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(78px,1fr)); gap:6px; align-content:start;
+  min-height:58px; max-height:92px; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  background:var(--surface); border-radius:11px; padding:6px;
 }
-.slots .empty{font-size:12px; padding:13px 6px}
-.acts{display:flex; gap:8px}
-.act{
-  flex:1; border:2px solid var(--line); border-radius:13px; padding:10px 6px; cursor:pointer;
-  font-family:inherit; font-weight:900; font-size:13px; background:var(--surface); color:var(--ink);
-  display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:var(--shadow);
-  transition:transform .1s;
-}
-.act:active{transform:translateY(2px)}
-.act .g{font-size:16px; line-height:1}
-.act.no{color:var(--no); border-color:var(--no)}
-.act.yes{color:var(--yes); border-color:var(--yes)}
-.act.yes[aria-pressed="true"]{background:var(--yes); color:#FFFFFF; border-color:var(--yes)}
-.act:disabled{opacity:.45; cursor:not-allowed}
+.slots .empty{font-size:11px; padding:8px 4px}
 
-.divider{display:flex; align-items:center; gap:10px}
-.divider .rule{flex:1; height:3px; border-radius:3px; background:var(--line)}
-.cancel{
-  border:2px solid var(--line); background:var(--surface); color:var(--ink-2); font-family:inherit;
-  font-weight:900; font-size:11px; letter-spacing:.06em; text-transform:uppercase;
-  padding:8px 13px; border-radius:999px; cursor:pointer; box-shadow:var(--shadow); white-space:nowrap;
+/* ---------- the three circle buttons ---------- */
+.acts{display:flex; justify-content:center; gap:14px; flex:none}
+.act{
+  background:none; border:none; padding:0; cursor:pointer; font-family:inherit;
+  display:flex; flex-direction:column; align-items:center; gap:3px; width:64px;
 }
-.cancel:active{transform:translateY(2px)}
+.dot{
+  width:46px; height:46px; border-radius:50%; display:grid; place-items:center;
+  font-size:23px; font-weight:900; color:#FFFFFF; line-height:1;
+  border:3px solid rgba(255,255,255,.55); transition:transform .12s, box-shadow .12s;
+}
+.act .lbl{
+  font-size:9px; font-weight:900; text-transform:uppercase; letter-spacing:.03em;
+  color:var(--ink-2); text-align:center; line-height:1.1;
+}
+.act:active .dot{transform:translateY(2px) scale(.95)}
+.act.go .dot{background:var(--go); box-shadow:0 3px 0 rgba(0,0,0,.16), 0 0 0 3px var(--go-soft)}
+.act.fin .dot{background:var(--fin); box-shadow:0 3px 0 rgba(0,0,0,.16), 0 0 0 3px var(--fin-soft)}
+.act.no .dot{background:var(--no); box-shadow:0 3px 0 rgba(0,0,0,.16), 0 0 0 3px rgba(240,69,95,.18)}
+.act.fin[aria-pressed="true"] .dot{
+  box-shadow:0 0 0 4px var(--fin), 0 0 14px rgba(46,123,224,.75);
+  animation:beat 1.1s ease-in-out infinite;
+}
+.act.fin[aria-pressed="true"] .lbl{color:var(--fin)}
+@keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.act:disabled{opacity:.38; cursor:not-allowed}
+.act:focus-visible .dot{outline:3px solid var(--pop); outline-offset:3px}
 
 .status{
-  text-align:center; font-weight:900; font-size:13.5px; min-height:20px; color:var(--ink-2);
-  padding:0 4px; margin:0; text-wrap:balance;
+  flex:none; text-align:center; font-weight:900; font-size:11.5px; min-height:15px; color:var(--ink-2);
+  padding:0 4px; margin:0; text-wrap:balance; line-height:1.25;
 }
-.status.go{color:var(--yes)} .status.stop{color:var(--no)}
+.status.go{color:var(--go)} .status.fin{color:var(--fin)} .status.stop{color:var(--no)}
 .status.shake{animation:shake .34s}
 @keyframes shake{25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
 
-.foot{text-align:center; font-size:11.5px; color:var(--ink-2); line-height:1.7; margin:0}
-.foot b{color:var(--ink)}
-
 canvas#fx{position:fixed; inset:0; pointer-events:none; z-index:50}
 .flash{animation:flash .6s}
-@keyframes flash{0%{background-color:var(--yes-soft)}100%{background-color:var(--felt)}}
+@keyframes flash{0%{background-color:var(--fin-soft)}100%{background-color:var(--felt)}}
 
+/* ---------- help sheet ---------- */
+.help[hidden]{display:none}
+.help{
+  position:fixed; inset:0; z-index:60; background:rgba(20,10,35,.55);
+  display:grid; place-items:center; padding:16px;
+}
+.sheet{
+  background:var(--surface); color:var(--ink); border:3px solid var(--line); border-radius:20px;
+  padding:16px 16px 14px; max-width:340px; width:100%; box-shadow:0 12px 40px rgba(0,0,0,.35);
+  max-height:86vh; overflow-y:auto;
+}
+.sheet h2{font-family:"Bagel Fat One", Nunito, cursive; font-weight:400; font-size:21px; margin:0 0 10px}
+.rule-row{display:flex; align-items:center; gap:10px; margin-bottom:11px}
+.rule-row .mini{
+  width:34px; height:34px; border-radius:50%; display:grid; place-items:center; flex:none;
+  color:#FFFFFF; font-size:17px; font-weight:900;
+}
+.mini.go{background:var(--go)} .mini.fin{background:var(--fin)} .mini.no{background:var(--no)}
+.rule-row p{margin:0; font-size:12.5px; line-height:1.35}
+.rule-row b{font-size:13px}
+.sheet .tip{font-size:12px; color:var(--ink-2); line-height:1.45; margin:12px 0 0}
+.sheet .close{
+  margin-top:13px; width:100%; border:none; background:var(--pop); color:#FFFFFF; font-family:inherit;
+  font-weight:900; font-size:14px; padding:11px; border-radius:12px; cursor:pointer;
+}
+
+@media (max-height:680px){
+  .card .qk{display:none}
+  .dot{width:42px; height:42px; font-size:21px}
+  .slots{min-height:52px; max-height:78px}
+}
 @media (prefers-reduced-motion: reduce){
   *{animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important}
 }
@@ -185,10 +234,11 @@ canvas#fx{position:fixed; inset:0; pointer-events:none; z-index:50}
 
 <canvas id="fx" aria-hidden="true"></canvas>
 
-<div class="wrap">
+<div class="app">
   <div class="bar">
     <h1 class="logo">Whatsit Swap</h1>
     <span class="spacer"></span>
+    <button class="icon-btn" id="hlp" title="How to play" aria-label="How to play">?</button>
     <button class="icon-btn" id="snd" title="Sound on or off" aria-label="Sound on or off">&#128266;</button>
     <button class="icon-btn" id="rst" title="Start over with new stuff" aria-label="Start over with new stuff">&#8635;</button>
   </div>
@@ -196,7 +246,7 @@ canvas#fx{position:fixed; inset:0; pointer-events:none; z-index:50}
   <section class="panel">
     <div class="phead">
       <button class="avatar" id="av1" title="Tap to change" aria-label="Change top trader's picture">&#129412;</button>
-      <input class="who" id="nm1" value="Bee" maxlength="10" aria-label="Top trader name">
+      <input class="who" id="nm1" value="Bee" maxlength="9" aria-label="Top trader name">
       <span class="spacer"></span>
       <span class="count" id="ct1"></span>
       <button class="find" data-find="1">&#10024; Find stuff</button>
@@ -208,21 +258,17 @@ canvas#fx{position:fixed; inset:0; pointer-events:none; z-index:50}
     <div class="half">
       <div class="slots" id="of1"></div>
       <div class="acts">
-        <button class="act no" data-more="1"><span class="g">&#10007;</span> More!</button>
-        <button class="act yes" data-ready="1" aria-pressed="false"><span class="g">&#10003;</span> <span class="lbl">Ready</span></button>
+        <button class="act go" data-go="1"><span class="dot">&#10003;</span><span class="lbl">Keep<br>playing</span></button>
+        <button class="act fin" data-fin="1" aria-pressed="false"><span class="dot">&#10003;</span><span class="lbl">Yes,<br>finish</span></button>
+        <button class="act no" data-cancel="1"><span class="dot">&#10007;</span><span class="lbl">Cancel<br>trade</span></button>
       </div>
-    </div>
-
-    <div class="divider">
-      <span class="rule"></span>
-      <button class="cancel" id="cancel">&#10007; Cancel trade</button>
-      <span class="rule"></span>
     </div>
 
     <div class="half">
       <div class="acts">
-        <button class="act no" data-more="0"><span class="g">&#10007;</span> More!</button>
-        <button class="act yes" data-ready="0" aria-pressed="false"><span class="g">&#10003;</span> <span class="lbl">Ready</span></button>
+        <button class="act go" data-go="0"><span class="dot">&#10003;</span><span class="lbl">Keep<br>playing</span></button>
+        <button class="act fin" data-fin="0" aria-pressed="false"><span class="dot">&#10003;</span><span class="lbl">Yes,<br>finish</span></button>
+        <button class="act no" data-cancel="0"><span class="dot">&#10007;</span><span class="lbl">Cancel<br>trade</span></button>
       </div>
       <div class="slots" id="of0"></div>
     </div>
@@ -233,19 +279,35 @@ canvas#fx{position:fixed; inset:0; pointer-events:none; z-index:50}
   <section class="panel">
     <div class="phead">
       <button class="avatar" id="av0" title="Tap to change" aria-label="Change bottom trader's picture">&#129418;</button>
-      <input class="who" id="nm0" value="Aria" maxlength="10" aria-label="Bottom trader name">
+      <input class="who" id="nm0" value="Aria" maxlength="9" aria-label="Bottom trader name">
       <span class="spacer"></span>
       <span class="count" id="ct0"></span>
       <button class="find" data-find="0">&#10024; Find stuff</button>
     </div>
     <div class="stash" id="st0"></div>
   </section>
+</div>
 
-  <p class="foot">
-    <b>&#10007; More!</b> means "that's not enough yet, add something" &nbsp;&middot;&nbsp;
-    <b>&#10003; Ready</b> means "I'm happy with this trade"<br>
-    Both traders happy &rarr; the stuff swaps.
-  </p>
+<div class="help" id="help" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="How to play">
+    <h2>How to play</h2>
+    <div class="rule-row">
+      <span class="mini go">&#10003;</span>
+      <p><b>Keep playing</b><br>Not enough yet &mdash; the other trader should put more stuff down.</p>
+    </div>
+    <div class="rule-row">
+      <span class="mini fin">&#10003;</span>
+      <p><b>Yes, finish</b><br>I'm happy! When <em>both</em> traders tap blue, the stuff swaps.</p>
+    </div>
+    <div class="rule-row">
+      <span class="mini no">&#10007;</span>
+      <p><b>Cancel trade</b><br>Call the whole thing off. Everybody gets their stuff back.</p>
+    </div>
+    <p class="tip">Tap a thing in your stash to put it on the table. Tap it again to take it back.<br><br>
+    <b>&#10024; Find stuff</b> digs up brand new things. Every single one is different &mdash; its own name, its own weird fact, its own star rating and its own number.<br><br>
+    Tap the animal or the name to change who is playing.</p>
+    <button class="close" id="helpClose">Got it!</button>
+  </div>
 </div>
 
 <script>
@@ -256,15 +318,15 @@ var NOUN = [
   ["Rubber Duck","🦆"],["Sock","🧦"],["Doorknob","🚪"],["Marble","🔮"],
   ["Spoon","🥄"],["Ghost","👻"],["Pebble","🪨"],["Traffic Cone","🚧"],
   ["Pickle","🥒"],["Trophy","🏆"],["Cactus","🌵"],["Umbrella","☂️"],
-  ["Bouncy Ball","🏐"],["Snail","🐌"],["Balloon","🎈"],["Moustache","👞"],
+  ["Bouncy Ball","🏐"],["Snail","🐌"],["Balloon","🎈"],["Boot","🥾"],
   ["Lava Lamp","🧪"],["Yo-Yo","🪀"],["Tooth","🦷"],["Wig","💇"],
-  ["Boot","🥾"],["Lightbulb","💡"],["Cloud","☁️"],["Mushroom","🍄"],
-  ["Dinosaur","🦖"],["Paperclip","📎"],["Bathtub","🛁"],["Chicken","🐔"],
-  ["Wizard Hat","🎩"],["Sandwich","🥪"],["Robot Arm","🤖"],["Skateboard","🛹"],
-  ["Whistle","🎺"],["Jellyfish","🪼"],["Doorbell","🔔"],["Sticker","⭐"],
-  ["Bucket","🪣"],["Frying Pan","🍳"],["Compass","🧭"],["Cupcake","🧁"],
-  ["Ladder","🪜"],["Penguin","🐧"],["Crystal","💎"],["Banana","🍌"],
-  ["Toaster","🍞"],["Teapot","🫖"],["Beetle","🪲"],["Puzzle Piece","🧩"]
+  ["Lightbulb","💡"],["Cloud","☁️"],["Mushroom","🍄"],["Dinosaur","🦖"],
+  ["Paperclip","📎"],["Bathtub","🛁"],["Chicken","🐔"],["Wizard Hat","🎩"],
+  ["Sandwich","🥪"],["Robot Arm","🤖"],["Skateboard","🛹"],["Whistle","🎺"],
+  ["Jellyfish","🪼"],["Doorbell","🔔"],["Sticker","⭐"],["Bucket","🪣"],
+  ["Frying Pan","🍳"],["Compass","🧭"],["Cupcake","🧁"],["Ladder","🪜"],
+  ["Penguin","🐧"],["Crystal","💎"],["Banana","🍌"],["Toaster","🍞"],
+  ["Teapot","🫖"],["Beetle","🪲"],["Puzzle Piece","🧩"],["Octopus","🐙"]
 ];
 
 var QUIRK = ["Smells faintly of Tuesday.","Hums when nobody is looking.","Came free with a sandwich.","Belonged to a famous goose.","Only works on Wednesdays.","Slightly warm. Nobody knows why.","Has opinions about soup.","Found at the bottom of a lake.","Refuses to be photographed.","Makes a boing noise. Always.","Older than your grandma's grandma.","Definitely not haunted. Probably.","Purrs if you are nice to it.","Was once a hat.","Weighs exactly one hamster.","Glows a bit in the dark.","Cannot be folded. Do not try.","Has a tiny door on the back.","Screams politely when dropped.","Tastes like the colour blue.","Voted Most Likely To Roll Away.","Comes with a very small friend.","Buzzes when a dog walks past.","Legally counts as a snack.","Survived three washing machines.","Ticks, but is not a clock.","Smells like a new notebook.","Slightly bigger on the inside.","Was a birthday present. Twice.","Nobody knows what it does.","Once won an argument.","Best friends with a spoon."];
@@ -297,7 +359,7 @@ var KEY = "whatsit-swap-v1";
 var S;
 function fresh(){
   return {
-    serial: 1, sound: true,
+    serial: 1, sound: true, seenHelp: false,
     p: [
       {name:"Aria", av:AVS[0], items:[], offer:[], ready:false},
       {name:"Bee",  av:AVS[1], items:[], offer:[], ready:false}
@@ -369,6 +431,7 @@ function cardHTML(it, where){
 }
 
 function render(){
+  var nothingDown = (S.p[0].offer.length === 0 && S.p[1].offer.length === 0);
   for (var i=0;i<2;i++){
     var p = S.p[i];
     if ($("nm"+i) !== document.activeElement) $("nm"+i).value = p.name;
@@ -380,10 +443,12 @@ function render(){
     $("of"+i).innerHTML = p.offer.length
       ? p.offer.map(function(it){ return cardHTML(it,"offer"); }).join("")
       : '<p class="empty">' + esc(p.name) + ' has not put anything down yet.</p>';
-    var rb = document.querySelector('[data-ready="' + i + '"]');
-    rb.setAttribute("aria-pressed", p.ready ? "true" : "false");
-    rb.querySelector(".lbl").textContent = p.ready ? "Happy!" : "Ready";
-    rb.disabled = (S.p[0].offer.length === 0 && S.p[1].offer.length === 0);
+
+    var fb = document.querySelector('[data-fin="' + i + '"]');
+    fb.setAttribute("aria-pressed", p.ready ? "true" : "false");
+    fb.querySelector(".lbl").innerHTML = p.ready ? "Happy!" : "Yes,<br>finish";
+    fb.disabled = nothingDown;
+    document.querySelector('[data-cancel="' + i + '"]').disabled = nothingDown;
   }
   $("snd").textContent = S.sound ? "🔊" : "🔇";
   save();
@@ -429,38 +494,47 @@ function tryTrade(){
   render();
   sTrade(); confetti();
   var t = $("table"); t.classList.remove("flash"); void t.offsetWidth; t.classList.add("flash");
-  say("🤝 Traded! " + n + " thing" + (n === 1 ? "" : "s") + " swapped. Check your stash!", "go");
+  say("🤝 Traded! " + n + " thing" + (n === 1 ? "" : "s") + " swapped. Check your stash!", "fin");
   return true;
 }
 
 document.addEventListener("click", function(e){
+  if (e.target.closest("#helpClose") || e.target.id === "help"){
+    $("help").hidden = true; S.seenHelp = true; save(); return;
+  }
+  if (e.target.closest("#hlp")){ $("help").hidden = false; return; }
+
   var card = e.target.closest(".card");
   if (card){ moveCard(card.getAttribute("data-id"), card.getAttribute("data-where")); return; }
 
-  var more = e.target.closest("[data-more]");
-  if (more){
-    var mi = +more.getAttribute("data-more");
+  /* green check - keep playing, ask for more */
+  var go = e.target.closest("[data-go]");
+  if (go){
+    var gi = +go.getAttribute("data-go");
     unready(); render(); sMore();
-    say("👉 " + S.p[mi].name + " wants more! Add something, " + S.p[1-mi].name + ".", "stop");
+    say("👉 " + S.p[gi].name + " wants to keep playing. Put more stuff down, " + S.p[1-gi].name + "!", "go");
     return;
   }
 
-  var rdy = e.target.closest("[data-ready]");
-  if (rdy){
-    var ri = +rdy.getAttribute("data-ready"), p = S.p[ri];
+  /* blue check - yes, finish */
+  var fin = e.target.closest("[data-fin]");
+  if (fin){
+    var ri = +fin.getAttribute("data-fin"), p = S.p[ri];
     p.ready = !p.ready;
     render();
-    if (!p.ready){ sBack(); say(p.name + " is not happy any more."); return; }
+    if (!p.ready){ sBack(); say(p.name + " is not finished after all."); return; }
     sYes();
-    if (!tryTrade()) say("✅ " + p.name + " is happy. Waiting on " + S.p[1-ri].name + "...", "go");
+    if (!tryTrade()) say("💙 " + p.name + " is ready to finish. Waiting on " + S.p[1-ri].name + "...", "fin");
     return;
   }
 
-  if (e.target.closest("#cancel")){
-    if (!S.p[0].offer.length && !S.p[1].offer.length){ say("Nothing on the table to cancel."); return; }
+  /* red X - cancel the whole trade */
+  var cxb = e.target.closest("[data-cancel]");
+  if (cxb){
+    var ci = +cxb.getAttribute("data-cancel");
     for (var i=0;i<2;i++){ S.p[i].items = S.p[i].items.concat(S.p[i].offer); S.p[i].offer = []; }
     unready(); render(); sBack();
-    say("Trade cancelled. Everybody got their stuff back.", "stop");
+    say("❌ " + S.p[ci].name + " cancelled the trade. Everybody got their stuff back.", "stop");
     return;
   }
 
@@ -480,7 +554,8 @@ document.addEventListener("click", function(e){
   if (e.target.closest("#rst")){
     if (!confirm("Start over? Everybody gets brand new stuff.")) return;
     var names = [S.p[0].name, S.p[1].name];
-    S = fresh(); serial = 1;
+    var seen = S.seenHelp;
+    S = fresh(); serial = 1; S.seenHelp = seen;
     S.p[0].name = names[0]; S.p[1].name = names[1];
     S.p[0].av = pick(AVS);
     S.p[1].av = pick(AVS.filter(function(a){ return a !== S.p[0].av; }));
@@ -508,7 +583,7 @@ for (var i=0;i<2;i++){
 }
 
 /* ============ confetti ============ */
-var cv = $("fx"), cx = cv.getContext("2d");
+var cv = $("fx"), ctx = cv.getContext("2d");
 var bits = [], raf = 0;
 var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 function sizeCanvas(){ cv.width = window.innerWidth; cv.height = window.innerHeight; }
@@ -517,9 +592,9 @@ sizeCanvas();
 
 function confetti(){
   if (reduce) return;
-  var cols = ["#F0455F","#0FAF7E","#F2A81C","#7A3BE0","#2E8FE0"];
+  var cols = ["#F0455F","#0FAF7E","#2E7BE0","#F2A81C","#7A3BE0"];
   bits = [];
-  for (var i=0;i<90;i++){
+  for (var i=0;i<80;i++){
     bits.push({
       x: Math.random()*cv.width, y: cv.height*0.45 + Math.random()*70,
       vx: (Math.random()-0.5)*7, vy: -7 - Math.random()*8,
@@ -531,25 +606,26 @@ function confetti(){
   raf = requestAnimationFrame(tick);
 }
 function tick(){
-  cx.clearRect(0,0,cv.width,cv.height);
+  ctx.clearRect(0,0,cv.width,cv.height);
   var alive = false;
   for (var i=0;i<bits.length;i++){
     var b = bits[i];
     b.vy += 0.32; b.x += b.vx; b.y += b.vy; b.r += b.vr; b.life -= 0.009;
     if (b.life > 0 && b.y < cv.height + 30){
       alive = true;
-      cx.save(); cx.translate(b.x, b.y); cx.rotate(b.r);
-      cx.globalAlpha = Math.max(0, b.life); cx.fillStyle = b.c;
-      cx.fillRect(-b.s/2, -b.s/2, b.s, b.s*0.62);
-      cx.restore();
+      ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.r);
+      ctx.globalAlpha = Math.max(0, b.life); ctx.fillStyle = b.c;
+      ctx.fillRect(-b.s/2, -b.s/2, b.s, b.s*0.62);
+      ctx.restore();
     }
   }
   if (alive){ raf = requestAnimationFrame(tick); }
-  else { cx.clearRect(0,0,cv.width,cv.height); raf = 0; }
+  else { ctx.clearRect(0,0,cv.width,cv.height); raf = 0; }
 }
 
 load();
 render();
+if (!S.seenHelp) $("help").hidden = false;
 </script>
 </body>
 </html>
