@@ -214,9 +214,14 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--pop); outline-
 }
 .slots{
   display:grid; grid-auto-flow:column; grid-auto-columns:58px; gap:5px; justify-content:start;
-  height:78px; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch;
+  height:86px; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch;
   background:var(--surface); border-radius:10px; padding:5px;
 }
+/* on the table the picture gives up space so the stars are never cut off */
+.slots .card{height:100%; overflow:hidden}
+.slots .pic{flex:1 1 auto; min-height:14px; aspect-ratio:auto}
+.slots .nm{flex:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.slots .pips{flex:none; font-size:9px; letter-spacing:.06em}
 .slots::-webkit-scrollbar{height:0}
 .slots .empty{
   grid-column:1/-1; width:100%; font-size:10.5px; padding:0; align-self:center;
@@ -309,6 +314,19 @@ canvas#fx{position:fixed; inset:0; pointer-events:none; z-index:80}
 .reveal .stars{font-size:15px; font-weight:900; letter-spacing:.1em; margin:0 0 10px}
 
 /* ---------- robot opponent ---------- */
+.panel.robot{flex:none}
+.hand{
+  display:flex; gap:4px; height:36px; overflow:hidden; align-items:stretch;
+  padding:0; margin:0; flex:none;
+}
+.back{
+  width:27px; border-radius:6px; border:2px solid var(--line); flex:none;
+  display:grid; place-items:center; font-size:12px; font-weight:900; color:var(--ink-2);
+  background:var(--sunk);
+  background-image:repeating-linear-gradient(45deg, var(--line) 0 3px, transparent 3px 7px);
+}
+.back.more{width:auto; padding:0 7px; font-size:9.5px; letter-spacing:.04em; background-image:none}
+
 .act.botpress .dot{animation:botpress .5s ease-out}
 @keyframes botpress{
   0%{transform:scale(1)}
@@ -332,7 +350,7 @@ canvas#fx{position:fixed; inset:0; pointer-events:none; z-index:80}
   .dot{width:39px; height:39px; font-size:20px}
   .act .lbl{font-size:7.5px; line-height:1.1}
   .act .lbl br{display:none}
-  .slots{height:64px; grid-auto-columns:52px}
+  .slots{height:76px; grid-auto-columns:54px}
   .pic .glyph{font-size:21px}
   .card .nm{font-size:8.5px}
   .bin{font-size:9px; padding:2px 7px 2px 5px}
@@ -610,9 +628,20 @@ function render(){
     if ($("nm"+i) !== document.activeElement) $("nm"+i).value = p.name;
     $("av"+i).textContent = p.av;
     $("ct"+i).textContent = p.items.length + " thing" + (p.items.length === 1 ? "" : "s");
-    $("st"+i).innerHTML = p.items.length
-      ? p.items.map(function(it){ return cardHTML(it,"stash"); }).join("")
-      : '<p class="empty">Nothing yet &mdash; tap a bin up there.</p>';
+    if (S.bot && i === 1){
+      /* she does not get to see what the robot is holding */
+      var shown = Math.min(p.items.length, 7);
+      var backs = "";
+      for (var bk=0; bk<shown; bk++) backs += '<span class="back">?</span>';
+      if (p.items.length > shown) backs += '<span class="back more">+' + (p.items.length - shown) + '</span>';
+      $("st"+i).className = "hand";
+      $("st"+i).innerHTML = backs || '<span class="back more">empty</span>';
+    } else {
+      $("st"+i).className = "stash";
+      $("st"+i).innerHTML = p.items.length
+        ? p.items.map(function(it){ return cardHTML(it,"stash"); }).join("")
+        : '<p class="empty">Nothing yet &mdash; tap a bin up there.</p>';
+    }
 
     var slots = $("of"+i);
     slots.classList.toggle("wide", p.offer.length === 0);

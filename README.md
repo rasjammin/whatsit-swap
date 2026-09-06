@@ -57,6 +57,10 @@ remember this."*
 
 Robo also pulls the box trick itself, so watch what it hands over.
 
+Against Robo you cannot see its cards - its side of the screen collapses to a row
+of face-down backs, and that reclaimed space goes to your own stash and the
+trading line. You only find out what it is holding when it puts it on the table.
+
 ## Fits one phone screen
 
 The whole game is locked to a single screen: the page itself never scrolls, only
