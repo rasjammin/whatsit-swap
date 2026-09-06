@@ -39,6 +39,24 @@ Trade the box away, and whoever ends up with it taps the **unlock** badge to ope
 it - and finds out whether they just got a legendary crystal or a one-star
 Terrible Tooth. The box empties out and can be re-used for the next scam.
 
+## Playing the robot
+
+Tap the people button in the top bar to swap the other trader for **Robo**. Robo
+runs entirely in the browser - no server, no account, no second device.
+
+Robo values a pile by counting stars, always brings something of its own to a
+trade, tops up when it is getting the better end, pushes back when it is not,
+and walks away after being pushed three times. Tapping the blue **+** at it is a
+real ask - it will add another thing, or tell you it has given you plenty.
+
+**Robo believes what a box says on the outside.** The first time, a sealed box is
+worth the five stars printed on it, so it will happily overpay. Get burned once
+and it starts discounting boxes; by the third time it values them at half a star
+and stops overpaying entirely. It says so out loud when it opens one: *"Robo will
+remember this."*
+
+Robo also pulls the box trick itself, so watch what it hands over.
+
 ## Fits one phone screen
 
 The whole game is locked to a single screen: the page itself never scrolls, only

@@ -308,6 +308,26 @@ canvas#fx{position:fixed; inset:0; pointer-events:none; z-index:80}
 .reveal .verdict{font-size:13px; font-weight:900; margin:0 0 3px; line-height:1.3}
 .reveal .stars{font-size:15px; font-weight:900; letter-spacing:.1em; margin:0 0 10px}
 
+/* ---------- robot opponent ---------- */
+.act.botpress .dot{animation:botpress .5s ease-out}
+@keyframes botpress{
+  0%{transform:scale(1)}
+  30%{transform:scale(1.3); box-shadow:0 0 0 8px rgba(122,59,224,.35)}
+  100%{transform:scale(1)}
+}
+.robot .acts{pointer-events:none}
+.robot .card{cursor:default}
+.robot .who{opacity:.85}
+.thinking{
+  display:inline-block; margin-left:5px; font-size:9px; font-weight:900;
+  color:var(--pop); letter-spacing:.06em; text-transform:uppercase;
+}
+.thinking[hidden]{display:none}
+.thinking i{font-style:normal; animation:blink 1.1s infinite}
+.thinking i:nth-child(2){animation-delay:.2s}
+.thinking i:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,60%,100%{opacity:.25}30%{opacity:1}}
+
 @media (max-height:700px){
   .dot{width:39px; height:39px; font-size:20px}
   .act .lbl{font-size:7.5px; line-height:1.1}
@@ -330,6 +350,7 @@ canvas#fx{position:fixed; inset:0; pointer-events:none; z-index:80}
   <div class="bar">
     <h1 class="logo">Whatsit Swap</h1>
     <span class="spacer"></span>
+    <button class="icon-btn" id="opp" title="Play against the robot" aria-label="Switch opponent">&#128101;</button>
     <button class="icon-btn" id="hlp" title="How to play" aria-label="How to play">?</button>
     <button class="icon-btn" id="snd" title="Sound on or off" aria-label="Sound on or off">&#128266;</button>
     <button class="icon-btn" id="rst" title="Start over with new stuff" aria-label="Start over with new stuff">&#8635;</button>
@@ -339,6 +360,7 @@ canvas#fx{position:fixed; inset:0; pointer-events:none; z-index:80}
     <div class="phead">
       <button class="avatar" id="av1" title="Tap to change" aria-label="Change top trader's picture">&#129412;</button>
       <input class="who" id="nm1" value="Bee" maxlength="9" aria-label="Top trader name">
+      <span class="thinking" id="think" hidden>thinking<i>.</i><i>.</i><i>.</i></span>
       <span class="spacer"></span>
       <span class="count" id="ct1"></span>
     </div>
@@ -461,7 +483,7 @@ var S, binOpen = null, binPlayer = 0, binOffer = [], packing = null;
 
 function fresh(){
   return {
-    serial:1, sound:true, seenHelp:false,
+    serial:1, sound:true, seenHelp:false, bot:false, botBurned:0, humanName:"Bee",
     p:[
       {name:"Aria", av:AVS[0], items:[], offer:[], ready:false},
       {name:"Bee",  av:AVS[1], items:[], offer:[], ready:false}
@@ -605,6 +627,11 @@ function render(){
     document.querySelector('[data-cancel="' + i + '"]').disabled = nothingDown;
   }
   $("snd").textContent = S.sound ? "🔊" : "🔇";
+  $("opp").textContent = S.bot ? "🤖" : "👥";
+  $("opp").title = S.bot ? "Robot opponent - tap for two players" : "Two players - tap to play the robot";
+  document.querySelectorAll(".panel")[0].classList.toggle("robot", S.bot);
+  $("bins1").hidden = S.bot;
+  $("nm1").disabled = S.bot;
   save();
 }
 
@@ -737,6 +764,7 @@ document.addEventListener("click", function(e){
     var fi = findItem(sid), box = findItem(packing.boxId);
     if (fi && box){
       box.it.contents = S.p[fi.p].items.splice(fi.k,1)[0];
+      box.it.packedBy = box.p;
       closeSheet(); render(); sSeal();
       say("🤫 " + S.p[box.p].name + " sealed something inside the " + box.it.label + ".");
     }
@@ -770,6 +798,10 @@ document.addEventListener("click", function(e){
   /* ---- the table ---- */
   var card = e.target.closest(".card");
   if (card && card.hasAttribute("data-where")){
+    /* hands off the robot's stuff */
+    if (S.bot && !botActing && card.closest("#st1, #of1")) {
+      say("That's Robo's stuff. Hands off!", "stop"); return;
+    }
     moveCard(card.getAttribute("data-id"), card.getAttribute("data-where")); return;
   }
 
@@ -777,6 +809,7 @@ document.addEventListener("click", function(e){
   var keep = e.target.closest("[data-keep]");
   if (keep){
     var gi = +keep.getAttribute("data-keep");
+    if (S.bot && gi === 0) botAskedMore = true;
     unready(); render(); sKeep();
     say("➕ " + S.p[gi].name + " wants to keep playing. Put more stuff down, " + S.p[1-gi].name + "!", "keep");
     return;
@@ -805,6 +838,26 @@ document.addEventListener("click", function(e){
   }
 
   if (e.target.closest("#snd")){ S.sound = !S.sound; render(); if (S.sound) sTap(); return; }
+
+  if (e.target.closest("#opp")){
+    /* everything on the table goes home before the opponent changes */
+    for (var z=0;z<2;z++){ S.p[z].items = S.p[z].items.concat(S.p[z].offer); S.p[z].offer = []; }
+    unready(); botNags = 0; clearTimeout(botTimer); $("think").hidden = true;
+    S.bot = !S.bot;
+    if (S.bot){
+      S.humanName = S.p[1].name === "Robo" ? (S.humanName || "Bee") : S.p[1].name;
+      S.p[1].name = "Robo"; S.p[1].av = "🤖";
+      render(); sYes();
+      say("🤖 Robo wants to trade. Good luck.", "keep");
+      scheduleBot(1200);
+    } else {
+      S.p[1].name = S.humanName || "Bee";
+      S.p[1].av = AVS[1];
+      render(); sTap();
+      say("Two players again. Pass the phone.");
+    }
+    return;
+  }
 
   if (e.target.closest("#rst")){
     if (!confirm("Start over? Everybody gets brand new stuff.")) return;
@@ -840,6 +893,8 @@ function showHelp(){
     + '<b>&#128230; Boxes are sneaky.</b> Every box says &#9733;&#9733;&#9733;&#9733;&#9733; on the outside. '
     + 'Tap the little <b>+</b> on a box in your stash to hide something inside it, then trade the box. '
     + 'Whoever gets it taps the <b>&#128275;</b> to open it &mdash; and finds out what is <em>really</em> in there.<br><br>'
+    + '<b>&#129302; Playing alone?</b> Tap the people button at the top to swap the other trader '
+    + 'for Robo. Robo believes what a box says on the outside &mdash; the first few times.<br><br>'
     + 'Tap the animal or the name to change who is playing.</p>'
     + '<button class="btn" id="sheetDone">Got it!</button>'
   );
@@ -855,6 +910,160 @@ for (var i=0;i<2;i++){
     $("nm"+i).addEventListener("blur", render);
   })(i);
 }
+
+/* =======================================================================
+   THE ROBOT
+   Plays the top seat when it is switched on. It values a pile by stars,
+   and it values a SEALED BOX at the five stars printed on the outside -
+   until it gets burned, and then it starts discounting them.
+   ======================================================================= */
+var botTimer = null, botActing = false, botNags = 0, botAskedMore = false;
+
+function starVal(it){
+  if (it.kind === "box"){
+    var b = S.botBurned || 0;
+    return b >= 3 ? 0.5 : (b === 2 ? 1.5 : (b === 1 ? 3 : 5));
+  }
+  return PIPS[it.rarity].length;
+}
+function pileVal(a){ var t = 0; for (var i=0;i<a.length;i++) t += starVal(a[i]); return t; }
+
+function scheduleBot(ms){
+  if (!S.bot){ $("think").hidden = true; return; }
+  clearTimeout(botTimer);
+  $("think").hidden = false;
+  botTimer = setTimeout(function(){ $("think").hidden = true; botAct(); }, ms || (900 + Math.random()*800));
+}
+function botSay(msg, cls){ say("🤖 " + msg, cls); }
+function botPress(kind){
+  var el = document.querySelector('[data-' + kind + '="1"]');
+  if (!el) return;
+  el.classList.remove("botpress"); void el.offsetWidth; el.classList.add("botpress");
+}
+function botAct(){
+  if (!S.bot || botActing) return;
+  botActing = true;
+  try { botBrain(); } catch(err){ } finally { botActing = false; }
+}
+
+function botBrain(){
+  var me = S.p[1], you = S.p[0];
+
+  /* 1. did somebody hand it a sealed box? open it. */
+  var handed = me.items.filter(function(x){ return x.kind === "box" && x.contents && x.packedBy !== 1; });
+  if (handed.length){
+    var bx = handed[0], inside = bx.contents;
+    bx.contents = null; bx.packedBy = null;
+    me.items.push(inside);
+    var worth = PIPS[inside.rarity].length;
+    if (worth <= 2){
+      S.botBurned = (S.botBurned || 0) + 1;
+      render(); sOpen();
+      botSay("Robo opened the " + bx.label + " ... " + article(inside.label) + inside.label
+        + " " + PIPS[inside.rarity] + ". Robo will remember this.", "stop");
+    } else {
+      render(); sOpen(); confetti();
+      botSay("Robo opened the " + bx.label + " ... " + article(inside.label) + inside.label
+        + " " + PIPS[inside.rarity] + ". Robo is delighted.", "done");
+    }
+    scheduleBot(1600);
+    return;
+  }
+
+  /* 2. keep a stash worth trading from */
+  if (me.items.length < 4){
+    var bin = pick(BINS).key;
+    me.items.push(makeThing(bin));
+    render(); sFind();
+    botSay("Robo went digging in " + BINMAP[bin].title + ".");
+    scheduleBot(700);
+    return;
+  }
+
+  /* 3. nothing on the table - wait for a human to start it */
+  if (you.offer.length === 0 && me.offer.length === 0){ botNags = 0; return; }
+  if (you.offer.length === 0) return;               /* it has offered, ball is in her court */
+
+  var mine = pileVal(me.offer), hers = pileVal(you.offer);
+  var gap = hers - mine;
+
+  /* 3b. she tapped the blue plus - that is a direct ask for more */
+  if (botAskedMore){
+    botAskedMore = false;
+    if (mine <= hers + 1.5 && me.items.length){
+      var extra = me.items.slice().sort(function(a,b){ return starVal(a) - starVal(b); })[0];
+      me.offer.push(me.items.splice(me.items.indexOf(extra),1)[0]);
+      unready(); render(); sTap();
+      botSay("Fine. Robo adds one more thing.");
+      scheduleBot(1200);
+      return;
+    }
+    botNags++;
+    if (botNags >= 3){
+      for (var q=0;q<2;q++){ S.p[q].items = S.p[q].items.concat(S.p[q].offer); S.p[q].offer = []; }
+      unready(); botNags = 0; render(); botPress("cancel"); sBack();
+      botSay("Robo is done being asked. Robo is out.", "stop");
+      return;
+    }
+    unready(); render(); botPress("keep"); sKeep();
+    botSay("Robo has already given you plenty.", "keep");
+    return;
+  }
+
+  /* 4. it always puts something down, and tops up when it is getting the better deal */
+  if (me.items.length && (me.offer.length === 0 || gap > 1.2)){
+    /* sometimes it pulls the box trick itself */
+    var junk = me.items.filter(function(x){ return x.kind !== "box" && PIPS[x.rarity].length <= 2; });
+    var emptyBox = me.items.filter(function(x){ return x.kind === "box" && !x.contents; });
+    if (emptyBox.length && junk.length && Math.random() < 0.35){
+      emptyBox[0].contents = junk[0];
+      emptyBox[0].packedBy = 1;
+      me.items.splice(me.items.indexOf(junk[0]), 1);
+      render(); sSeal();
+      botSay("Robo put something in a box. Robo looks innocent.");
+      scheduleBot(1100);
+      return;
+    }
+    /* otherwise the best thing it owns that still fits under the gap */
+    var fits = me.items.filter(function(x){ return starVal(x) <= gap + 0.5; });
+    var give = fits.length
+      ? fits.sort(function(a,b){ return starVal(b) - starVal(a); })[0]
+      : me.items.slice().sort(function(a,b){ return starVal(a) - starVal(b); })[0];
+    me.offer.push(me.items.splice(me.items.indexOf(give),1)[0]);
+    unready(); render(); sTap();
+    botSay("Robo put something down.");
+    scheduleBot(1000);
+    return;
+  }
+
+  /* 5. roughly even - take the deal */
+  if (gap >= -0.6){
+    botNags = 0;
+    me.ready = true;
+    render(); botPress("done"); sYes();
+    if (!tryTrade()) botSay("Robo is happy with that. Your move.", "done");
+    else scheduleBot(1500);
+    return;
+  }
+
+  /* 6. it is losing on the deal - ask for more, and give up after three */
+  botNags++;
+  if (botNags >= 3){
+    for (var i=0;i<2;i++){ S.p[i].items = S.p[i].items.concat(S.p[i].offer); S.p[i].offer = []; }
+    unready(); botNags = 0; render(); botPress("cancel"); sBack();
+    botSay("Robo does not like this trade. Robo is out.", "stop");
+    return;
+  }
+  unready(); render(); botPress("keep"); sKeep();
+  botSay(pick([
+    "Robo wants more than that.",
+    "That is not enough for Robo.",
+    "Robo has done the maths. Add something."
+  ]), "keep");
+}
+
+/* after anything the human does, let the robot have a think */
+document.addEventListener("click", function(){ if (!botActing) scheduleBot(); });
 
 /* ============ confetti ============ */
 var cv = $("fx"), ctx = cv.getContext("2d");
@@ -900,6 +1109,7 @@ function tick(){
 load();
 renderBins();
 render();
+if (S.bot) scheduleBot(1400);
 if (!S.seenHelp) showHelp();
 </script>
 </body>
