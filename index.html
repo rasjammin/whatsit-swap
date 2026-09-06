@@ -14,34 +14,40 @@
 :root{
   --ground:#F2EDF9; --surface:#FFFFFF; --felt:#E7DCF5; --sunk:#EDE4F7;
   --ink:#2A1B3D; --ink-2:#6E5C84; --line:#DACBEB;
-  --go:#0FAF7E; --go-soft:#D9F5EC;
-  --fin:#2E7BE0; --fin-soft:#DAEAFB;
+  --keep:#2E7BE0; --keep-soft:#DAEAFB;
+  --done:#0FAF7E; --done-soft:#D9F5EC;
   --no:#F0455F;
   --gold:#F2A81C; --pop:#7A3BE0;
   --shadow:0 2px 0 #DACBEB, 0 5px 12px rgba(42,27,61,.10);
   --r-common:#8E7EA9; --r-rare:#2E8FE0; --r-epic:#9B44E0; --r-legend:#F2A81C; --r-oneof:#F0455F;
+  --t-cursed:#EDE3FB; --t-shiny:#FDF2D6; --t-squishy:#FDE4EE; --t-gross:#E1F4DE; --t-ancient:#F6EBDA; --t-box:#E8E3F2;
+  --c-cursed:#8B3FE8; --c-shiny:#E0980D; --c-gross:#3F9A2E; --c-ancient:#8A6A3E; --c-box:#6E5C84;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --ground:#160F26; --surface:#241A3A; --felt:#1E1533; --sunk:#2C2148;
     --ink:#F7F1FF; --ink-2:#B0A0CA; --line:#3D2E5C;
-    --go:#19C994; --go-soft:#123A30;
-    --fin:#3E90F5; --fin-soft:#12294A;
+    --keep:#3E90F5; --keep-soft:#12294A;
+    --done:#19C994; --done-soft:#123A30;
     --no:#FF5C73;
     --gold:#FFC53D; --pop:#B487FF;
     --shadow:0 2px 0 #3D2E5C, 0 5px 14px rgba(0,0,0,.4);
     --r-common:#9C8CB8; --r-rare:#5AB0F5; --r-epic:#C07CFF; --r-legend:#FFC53D; --r-oneof:#FF6B80;
+    --t-cursed:#2B2049; --t-shiny:#3A2F12; --t-squishy:#3B2031; --t-gross:#153318; --t-ancient:#33281A; --t-box:#2A2340;
+    --c-cursed:#C08CFF; --c-shiny:#FFC53D; --c-gross:#6FD45C; --c-ancient:#C9A472; --c-box:#B0A0CA;
   }
 }
 :root[data-theme="dark"]{
   --ground:#160F26; --surface:#241A3A; --felt:#1E1533; --sunk:#2C2148;
   --ink:#F7F1FF; --ink-2:#B0A0CA; --line:#3D2E5C;
-  --go:#19C994; --go-soft:#123A30;
-  --fin:#3E90F5; --fin-soft:#12294A;
+  --keep:#3E90F5; --keep-soft:#12294A;
+  --done:#19C994; --done-soft:#123A30;
   --no:#FF5C73;
   --gold:#FFC53D; --pop:#B487FF;
   --shadow:0 2px 0 #3D2E5C, 0 5px 14px rgba(0,0,0,.4);
   --r-common:#9C8CB8; --r-rare:#5AB0F5; --r-epic:#C07CFF; --r-legend:#FFC53D; --r-oneof:#FF6B80;
+  --t-cursed:#2B2049; --t-shiny:#3A2F12; --t-squishy:#3B2031; --t-gross:#153318; --t-ancient:#33281A; --t-box:#2A2340;
+  --c-cursed:#C08CFF; --c-shiny:#FFC53D; --c-gross:#6FD45C; --c-ancient:#C9A472; --c-box:#B0A0CA;
 }
 
 *{box-sizing:border-box}
@@ -53,19 +59,17 @@ body{
   -webkit-tap-highlight-color:transparent; overscroll-behavior:none;
 }
 
-/* ---- full-screen shell: nothing scrolls except the two stashes ---- */
 .app{
-  height:100vh; height:100dvh;
-  max-width:560px; margin:0 auto;
-  padding:6px 8px calc(6px + env(safe-area-inset-bottom));
-  padding-top:calc(6px + env(safe-area-inset-top));
-  display:flex; flex-direction:column; gap:6px; overflow:hidden;
+  height:100vh; height:100dvh; max-width:560px; margin:0 auto;
+  padding:5px 7px calc(5px + env(safe-area-inset-bottom));
+  padding-top:calc(5px + env(safe-area-inset-top));
+  display:flex; flex-direction:column; gap:5px; overflow:hidden;
 }
 
 /* ---------- top bar ---------- */
-.bar{display:flex; align-items:center; gap:7px; flex:none}
+.bar{display:flex; align-items:center; gap:6px; flex:none}
 .logo{
-  font-family:"Bagel Fat One", Nunito, cursive; font-size:clamp(19px,5.4vw,26px);
+  font-family:"Bagel Fat One", Nunito, cursive; font-size:clamp(18px,5.2vw,25px);
   line-height:1.1; margin:0; font-weight:400; white-space:nowrap;
   background:linear-gradient(100deg,var(--pop),var(--no) 60%,var(--gold));
   -webkit-background-clip:text; background-clip:text; color:transparent;
@@ -73,7 +77,7 @@ body{
 .bar .spacer{flex:1}
 .icon-btn{
   border:2px solid var(--line); background:var(--surface); color:var(--ink);
-  width:31px; height:31px; border-radius:10px; font-size:13px; cursor:pointer;
+  width:29px; height:29px; border-radius:9px; font-size:12px; cursor:pointer;
   display:grid; place-items:center; box-shadow:var(--shadow); flex:none; padding:0;
 }
 .icon-btn:active{transform:translateY(1px)}
@@ -81,149 +85,237 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--pop); outline-
 
 /* ---------- trader panel ---------- */
 .panel{
-  background:var(--surface); border:2px solid var(--line); border-radius:15px;
-  padding:6px 8px 7px; box-shadow:var(--shadow);
-  display:flex; flex-direction:column; gap:5px;
-  flex:1 1 0; min-height:92px;
+  background:var(--surface); border:2px solid var(--line); border-radius:14px;
+  padding:5px 7px 6px; box-shadow:var(--shadow);
+  display:flex; flex-direction:column; gap:4px; flex:1 1 0; min-height:74px;
 }
-.phead{display:flex; align-items:center; gap:6px; flex:none}
+.phead{display:flex; align-items:center; gap:5px; flex:none}
 .who{
-  font-weight:900; font-size:14px; border:none; background:transparent; color:var(--ink);
-  font-family:inherit; width:8ch; padding:2px 5px; border-radius:7px; min-width:0;
+  font-weight:900; font-size:13.5px; border:none; background:transparent; color:var(--ink);
+  font-family:inherit; width:8ch; padding:2px 4px; border-radius:6px; min-width:0;
 }
 .who:hover{background:var(--sunk)}
 .avatar{
-  width:27px; height:27px; border-radius:9px; display:grid; place-items:center; font-size:15px;
+  width:25px; height:25px; border-radius:8px; display:grid; place-items:center; font-size:14px;
   background:var(--sunk); flex:none; border:none; cursor:pointer; padding:0;
 }
-.count{font-size:9.5px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-2); white-space:nowrap}
+.count{font-size:9px; font-weight:900; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-2); white-space:nowrap}
 .phead .spacer{flex:1}
-.find{
-  border:2px solid var(--line); background:var(--sunk); color:var(--ink); font-family:inherit;
-  font-weight:900; font-size:11px; padding:5px 9px; border-radius:9px; cursor:pointer; white-space:nowrap;
+
+/* bin chips - these replaced the old Find stuff button */
+.bins{
+  display:flex; gap:5px; flex:none; overflow-x:auto; padding-bottom:1px;
+  scrollbar-width:none; -webkit-overflow-scrolling:touch;
 }
-.find:active{transform:translateY(1px)}
+.bins::-webkit-scrollbar{display:none}
+.bin{
+  flex:none; display:flex; align-items:center; gap:3px; cursor:pointer; font-family:inherit;
+  border:2px solid var(--line); background:var(--sunk); color:var(--ink);
+  border-radius:999px; padding:3px 8px 3px 6px; font-size:9.5px; font-weight:900; white-space:nowrap;
+}
+.bin .bemo{font-size:12px; line-height:1}
+.bin:active{transform:translateY(1px)}
 
 .stash{
-  display:grid; grid-template-columns:repeat(auto-fill,minmax(78px,1fr));
-  gap:6px; align-content:start;
-  flex:1 1 0; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch;
-  padding:2px; margin:0 -2px;
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(72px,1fr)); gap:5px; align-content:start;
+  flex:1 1 0; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:2px; margin:0 -2px;
 }
 .empty{
-  grid-column:1/-1; text-align:center; color:var(--ink-2); font-size:11.5px; font-style:italic;
-  padding:10px 6px; margin:0; align-self:center;
+  grid-column:1/-1; text-align:center; color:var(--ink-2); font-size:11px; font-style:italic;
+  padding:8px 6px; margin:0; align-self:center;
+}
+
+/* ---------- the picture ---------- */
+.pic{
+  position:relative; width:100%; aspect-ratio:5/4; border-radius:8px; overflow:visible;
+  display:grid; place-items:center; background:var(--t-box);
+}
+.pic .glyph{font-size:26px; line-height:1; filter:drop-shadow(0 1px 1px rgba(0,0,0,.18))}
+.pic .d{position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none}
+.pic .d path{fill:none; stroke-linecap:round; stroke-linejoin:round}
+
+.pic.cursed{background:var(--t-cursed)}
+.pic.cursed .d path{stroke:var(--c-cursed); stroke-width:5; animation:wig 1.6s ease-in-out infinite}
+.pic.cursed .glyph{animation:hover 2.4s ease-in-out infinite}
+@keyframes wig{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}
+@keyframes hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+
+.pic.shiny{background:var(--t-shiny)}
+.pic .spark{position:absolute; color:var(--c-shiny); font-size:11px; font-style:normal; animation:twink 1.5s ease-in-out infinite}
+.pic .spark:nth-child(2){top:8%; left:10%}
+.pic .spark:nth-child(3){top:14%; right:9%; animation-delay:.5s; font-size:8px}
+.pic .spark:nth-child(4){bottom:10%; right:16%; animation-delay:1s; font-size:9px}
+@keyframes twink{0%,100%{opacity:.25; transform:scale(.7)}50%{opacity:1; transform:scale(1.15)}}
+
+.pic.squishy{background:var(--t-squishy)}
+.pic.squishy .glyph{animation:squish 1.3s ease-in-out infinite}
+@keyframes squish{0%,100%{transform:scale(1,1)}45%{transform:scale(1.14,.84)}70%{transform:scale(.93,1.08)}}
+
+.pic.gross{background:var(--t-gross)}
+.pic.gross .d path{stroke:var(--c-gross); stroke-width:6; animation:drip 2.1s ease-in infinite}
+.pic.gross .d path:nth-child(2){animation-delay:.7s}
+.pic.gross .d path:nth-child(3){animation-delay:1.4s}
+@keyframes drip{0%{opacity:0; transform:translateY(-5px)}30%{opacity:1}100%{opacity:0; transform:translateY(9px)}}
+
+.pic.ancient{background:var(--t-ancient)}
+.pic.ancient .glyph{filter:sepia(.7) contrast(.92) drop-shadow(0 1px 1px rgba(0,0,0,.2))}
+.pic.ancient .d path{stroke:var(--c-ancient); stroke-width:1.6; opacity:.8}
+
+.pic.box{background:var(--t-box)}
+.pic.box .tape{
+  position:absolute; left:6%; right:6%; top:50%; height:5px; margin-top:-2.5px;
+  background:var(--c-box); opacity:.42; border-radius:3px;
+}
+.pic.box .tape.v{left:50%; right:auto; top:8%; bottom:8%; height:auto; width:5px; margin:0 0 0 -2.5px}
+.pic.box .seal{
+  position:absolute; right:-3px; top:-4px; font-size:12px; font-style:normal;
+  background:var(--surface); border-radius:50%; padding:1px 2px; line-height:1;
+  box-shadow:0 1px 3px rgba(0,0,0,.25);
 }
 
 /* ---------- cards ---------- */
+.cardwrap{position:relative; min-width:0; display:flex}
 .card{
-  position:relative; text-align:left; cursor:pointer; font-family:inherit; color:var(--ink);
-  background:var(--surface); border:2px solid var(--line); border-top-width:4px; border-radius:11px;
-  padding:5px 6px 6px; display:flex; flex-direction:column; gap:1px; min-width:0; height:max-content;
+  position:relative; width:100%; text-align:left; cursor:pointer; font-family:inherit; color:var(--ink);
+  background:var(--surface); border:2px solid var(--line); border-top-width:4px; border-radius:10px;
+  padding:4px 4px 5px; display:flex; flex-direction:column; gap:2px; min-width:0;
   animation:pop .2s cubic-bezier(.2,1.5,.5,1) both;
 }
 .card:active{transform:translateY(1px)}
-.card .emo{font-size:19px; line-height:1.1}
-.card .nm{font-weight:900; font-size:10px; line-height:1.18; overflow-wrap:anywhere}
-.card .qk{font-size:8.5px; font-style:italic; color:var(--ink-2); line-height:1.22}
-.card .pips{font-size:7.5px; letter-spacing:.1em; font-weight:900; margin-top:1px}
+.card .nm{font-weight:900; font-size:9px; line-height:1.15; overflow-wrap:anywhere}
+.card .qk{font-size:8px; font-style:italic; color:var(--ink-2); line-height:1.2}
+.card .pips{font-size:7.5px; letter-spacing:.08em; font-weight:900}
 .card[data-r="common"]{border-top-color:var(--r-common)} .card[data-r="common"] .pips{color:var(--r-common)}
 .card[data-r="rare"]{border-top-color:var(--r-rare)} .card[data-r="rare"] .pips{color:var(--r-rare)}
 .card[data-r="epic"]{border-top-color:var(--r-epic)} .card[data-r="epic"] .pips{color:var(--r-epic)}
-.card[data-r="legendary"]{border-top-color:var(--r-legend); box-shadow:0 0 0 2px rgba(242,168,28,.24)}
-.card[data-r="legendary"] .pips{color:var(--r-legend)}
-.card[data-r="one-of-a-kind"]{border-top-color:var(--r-oneof); box-shadow:0 0 0 2px rgba(240,69,95,.26)}
-.card[data-r="one-of-a-kind"] .pips{color:var(--r-oneof)}
+.card[data-r="legendary"]{border-top-color:var(--r-legend)} .card[data-r="legendary"] .pips{color:var(--r-legend)}
+.card[data-r="one-of-a-kind"]{border-top-color:var(--r-oneof)} .card[data-r="one-of-a-kind"] .pips{color:var(--r-oneof)}
 .card .sn{
-  position:absolute; top:4px; right:5px; font-size:7px; font-weight:900; color:var(--ink-2);
-  opacity:.7; font-variant-numeric:tabular-nums;
+  position:absolute; bottom:4px; right:4px; font-size:6.5px; font-weight:900; color:var(--ink-2);
+  opacity:.65; font-variant-numeric:tabular-nums;
 }
 @keyframes pop{from{opacity:0; transform:scale(.82)} to{opacity:1; transform:none}}
 
-/* ---------- the table ---------- */
+.badge{
+  position:absolute; top:2px; left:2px; z-index:2; width:22px; height:22px; border-radius:50%;
+  border:2px solid var(--surface); color:#FFFFFF; font-size:12px; font-weight:900; font-family:inherit;
+  display:grid; place-items:center; cursor:pointer; padding:0; line-height:1;
+  box-shadow:0 2px 5px rgba(0,0,0,.3);
+}
+.badge.pack{background:var(--pop)}
+.badge.open{background:var(--gold); color:#3A2A00; animation:nudge 1.8s ease-in-out infinite}
+@keyframes nudge{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+
+/* ---------- the table: buttons outside, the stuff in the middle ---------- */
 .table{
-  flex:none; background:var(--felt); border:3px dashed var(--line); border-radius:17px; padding:7px;
-  display:flex; flex-direction:column; gap:6px;
+  flex:none; background:var(--felt); border:3px dashed var(--line); border-radius:16px; padding:6px;
+  display:flex; flex-direction:column; gap:5px;
   background-image:radial-gradient(var(--line) 1px, transparent 1.4px); background-size:15px 15px;
 }
-.half{display:flex; flex-direction:column; gap:6px}
 .slots{
-  display:grid; grid-template-columns:repeat(auto-fill,minmax(78px,1fr)); gap:6px; align-content:start;
-  min-height:58px; max-height:92px; overflow-y:auto; -webkit-overflow-scrolling:touch;
-  background:var(--surface); border-radius:11px; padding:6px;
+  display:grid; grid-auto-flow:column; grid-auto-columns:58px; gap:5px; justify-content:start;
+  height:78px; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch;
+  background:var(--surface); border-radius:10px; padding:5px;
 }
-.slots .empty{font-size:11px; padding:8px 4px}
+.slots::-webkit-scrollbar{height:0}
+.slots .empty{
+  grid-column:1/-1; width:100%; font-size:10.5px; padding:0; align-self:center;
+  grid-auto-columns:auto; white-space:nowrap;
+}
+.slots.wide{grid-auto-flow:row; grid-template-columns:1fr}
+.mid{display:flex; align-items:center; gap:7px; padding:0 2px}
+.mid .rule{flex:1; height:2px; border-radius:2px; background:var(--line)}
+.mid .arrows{font-size:11px; font-weight:900; color:var(--ink-2)}
 
 /* ---------- the three circle buttons ---------- */
-.acts{display:flex; justify-content:center; gap:14px; flex:none}
+.acts{display:flex; justify-content:center; gap:13px; flex:none}
 .act{
   background:none; border:none; padding:0; cursor:pointer; font-family:inherit;
-  display:flex; flex-direction:column; align-items:center; gap:3px; width:64px;
+  display:flex; flex-direction:column; align-items:center; gap:2px; width:62px;
 }
 .dot{
-  width:46px; height:46px; border-radius:50%; display:grid; place-items:center;
+  width:44px; height:44px; border-radius:50%; display:grid; place-items:center;
   font-size:23px; font-weight:900; color:#FFFFFF; line-height:1;
   border:3px solid rgba(255,255,255,.55); transition:transform .12s, box-shadow .12s;
 }
 .act .lbl{
-  font-size:9px; font-weight:900; text-transform:uppercase; letter-spacing:.03em;
+  font-size:8.5px; font-weight:900; text-transform:uppercase; letter-spacing:.02em;
   color:var(--ink-2); text-align:center; line-height:1.1;
 }
 .act:active .dot{transform:translateY(2px) scale(.95)}
-.act.go .dot{background:var(--go); box-shadow:0 3px 0 rgba(0,0,0,.16), 0 0 0 3px var(--go-soft)}
-.act.fin .dot{background:var(--fin); box-shadow:0 3px 0 rgba(0,0,0,.16), 0 0 0 3px var(--fin-soft)}
+.act.keep .dot{background:var(--keep); box-shadow:0 3px 0 rgba(0,0,0,.16), 0 0 0 3px var(--keep-soft)}
+.act.done .dot{background:var(--done); box-shadow:0 3px 0 rgba(0,0,0,.16), 0 0 0 3px var(--done-soft)}
 .act.no .dot{background:var(--no); box-shadow:0 3px 0 rgba(0,0,0,.16), 0 0 0 3px rgba(240,69,95,.18)}
-.act.fin[aria-pressed="true"] .dot{
-  box-shadow:0 0 0 4px var(--fin), 0 0 14px rgba(46,123,224,.75);
-  animation:beat 1.1s ease-in-out infinite;
+.act.done[aria-pressed="true"] .dot{
+  box-shadow:0 0 0 4px var(--done), 0 0 14px rgba(15,175,126,.75); animation:beat 1.1s ease-in-out infinite;
 }
-.act.fin[aria-pressed="true"] .lbl{color:var(--fin)}
+.act.done[aria-pressed="true"] .lbl{color:var(--done)}
 @keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
-.act:disabled{opacity:.38; cursor:not-allowed}
+.act:disabled{opacity:.36; cursor:not-allowed}
 .act:focus-visible .dot{outline:3px solid var(--pop); outline-offset:3px}
 
 .status{
-  flex:none; text-align:center; font-weight:900; font-size:11.5px; min-height:15px; color:var(--ink-2);
+  flex:none; text-align:center; font-weight:900; font-size:11px; min-height:14px; color:var(--ink-2);
   padding:0 4px; margin:0; text-wrap:balance; line-height:1.25;
 }
-.status.go{color:var(--go)} .status.fin{color:var(--fin)} .status.stop{color:var(--no)}
+.status.keep{color:var(--keep)} .status.done{color:var(--done)} .status.stop{color:var(--no)}
 .status.shake{animation:shake .34s}
 @keyframes shake{25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
 
-canvas#fx{position:fixed; inset:0; pointer-events:none; z-index:50}
+canvas#fx{position:fixed; inset:0; pointer-events:none; z-index:80}
 .flash{animation:flash .6s}
-@keyframes flash{0%{background-color:var(--fin-soft)}100%{background-color:var(--felt)}}
+@keyframes flash{0%{background-color:var(--done-soft)}100%{background-color:var(--felt)}}
 
-/* ---------- help sheet ---------- */
-.help[hidden]{display:none}
-.help{
-  position:fixed; inset:0; z-index:60; background:rgba(20,10,35,.55);
-  display:grid; place-items:center; padding:16px;
+/* ---------- sheets ---------- */
+.veil[hidden]{display:none}
+.veil{
+  position:fixed; inset:0; z-index:60; background:rgba(20,10,35,.6);
+  display:grid; place-items:center; padding:14px;
 }
 .sheet{
-  background:var(--surface); color:var(--ink); border:3px solid var(--line); border-radius:20px;
-  padding:16px 16px 14px; max-width:340px; width:100%; box-shadow:0 12px 40px rgba(0,0,0,.35);
-  max-height:86vh; overflow-y:auto;
+  background:var(--surface); color:var(--ink); border:3px solid var(--line); border-radius:18px;
+  padding:13px; max-width:360px; width:100%; box-shadow:0 12px 40px rgba(0,0,0,.4);
+  max-height:88vh; overflow-y:auto; animation:rise .22s cubic-bezier(.2,1.3,.5,1) both;
 }
-.sheet h2{font-family:"Bagel Fat One", Nunito, cursive; font-weight:400; font-size:21px; margin:0 0 10px}
-.rule-row{display:flex; align-items:center; gap:10px; margin-bottom:11px}
+@keyframes rise{from{opacity:0; transform:translateY(14px) scale(.96)} to{opacity:1; transform:none}}
+.sheet h2{
+  font-family:"Bagel Fat One", Nunito, cursive; font-weight:400; font-size:20px; margin:0 0 3px;
+}
+.sheet .sub{font-size:11.5px; color:var(--ink-2); margin:0 0 10px}
+.pickgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-bottom:11px}
+.sheet .btn{
+  width:100%; border:none; background:var(--pop); color:#FFFFFF; font-family:inherit;
+  font-weight:900; font-size:13.5px; padding:10px; border-radius:11px; cursor:pointer;
+}
+.sheet .btn.ghost{background:var(--sunk); color:var(--ink); border:2px solid var(--line)}
+.sheet .row{display:flex; gap:7px; margin-top:7px}
+
+.rule-row{display:flex; align-items:center; gap:9px; margin-bottom:10px}
 .rule-row .mini{
-  width:34px; height:34px; border-radius:50%; display:grid; place-items:center; flex:none;
+  width:32px; height:32px; border-radius:50%; display:grid; place-items:center; flex:none;
   color:#FFFFFF; font-size:17px; font-weight:900;
 }
-.mini.go{background:var(--go)} .mini.fin{background:var(--fin)} .mini.no{background:var(--no)}
-.rule-row p{margin:0; font-size:12.5px; line-height:1.35}
-.rule-row b{font-size:13px}
-.sheet .tip{font-size:12px; color:var(--ink-2); line-height:1.45; margin:12px 0 0}
-.sheet .close{
-  margin-top:13px; width:100%; border:none; background:var(--pop); color:#FFFFFF; font-family:inherit;
-  font-weight:900; font-size:14px; padding:11px; border-radius:12px; cursor:pointer;
-}
+.mini.keep{background:var(--keep)} .mini.done{background:var(--done)} .mini.no{background:var(--no)}
+.rule-row p{margin:0; font-size:12px; line-height:1.35}
+.sheet .tip{font-size:11.5px; color:var(--ink-2); line-height:1.45; margin:10px 0 0}
 
-@media (max-height:680px){
-  .card .qk{display:none}
-  .dot{width:42px; height:42px; font-size:21px}
-  .slots{min-height:52px; max-height:78px}
+/* the box reveal */
+.reveal{text-align:center}
+.reveal .big{width:120px; margin:4px auto 10px}
+.reveal .big .pic{aspect-ratio:1; border-radius:14px; animation:burst .45s cubic-bezier(.2,1.6,.4,1) both}
+.reveal .big .pic .glyph{font-size:58px}
+@keyframes burst{from{transform:scale(.2) rotate(-14deg); opacity:0} to{transform:none; opacity:1}}
+.reveal .verdict{font-size:13px; font-weight:900; margin:0 0 3px; line-height:1.3}
+.reveal .stars{font-size:15px; font-weight:900; letter-spacing:.1em; margin:0 0 10px}
+
+@media (max-height:700px){
+  .dot{width:39px; height:39px; font-size:20px}
+  .act .lbl{font-size:7.5px; line-height:1.1}
+  .act .lbl br{display:none}
+  .slots{height:64px; grid-auto-columns:52px}
+  .pic .glyph{font-size:21px}
+  .card .nm{font-size:8.5px}
+  .bin{font-size:9px; padding:2px 7px 2px 5px}
 }
 @media (prefers-reduced-motion: reduce){
   *{animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important}
@@ -249,32 +341,30 @@ canvas#fx{position:fixed; inset:0; pointer-events:none; z-index:50}
       <input class="who" id="nm1" value="Bee" maxlength="9" aria-label="Top trader name">
       <span class="spacer"></span>
       <span class="count" id="ct1"></span>
-      <button class="find" data-find="1">&#10024; Find stuff</button>
     </div>
+    <div class="bins" id="bins1"></div>
     <div class="stash" id="st1"></div>
   </section>
 
   <section class="table" id="table">
-    <div class="half">
-      <div class="slots" id="of1"></div>
-      <div class="acts">
-        <button class="act go" data-go="1"><span class="dot">&#10003;</span><span class="lbl">Keep<br>playing</span></button>
-        <button class="act fin" data-fin="1" aria-pressed="false"><span class="dot">&#10003;</span><span class="lbl">Yes,<br>finish</span></button>
-        <button class="act no" data-cancel="1"><span class="dot">&#10007;</span><span class="lbl">Cancel<br>trade</span></button>
-      </div>
+    <div class="acts">
+      <button class="act keep" data-keep="1"><span class="dot">&#43;</span><span class="lbl">Keep <br>playing</span></button>
+      <button class="act done" data-done="1" aria-pressed="false"><span class="dot">&#10003;</span><span class="lbl">Yes, <br>finish</span></button>
+      <button class="act no" data-cancel="1"><span class="dot">&#10007;</span><span class="lbl">Cancel <br>trade</span></button>
     </div>
 
-    <div class="half">
-      <div class="acts">
-        <button class="act go" data-go="0"><span class="dot">&#10003;</span><span class="lbl">Keep<br>playing</span></button>
-        <button class="act fin" data-fin="0" aria-pressed="false"><span class="dot">&#10003;</span><span class="lbl">Yes,<br>finish</span></button>
-        <button class="act no" data-cancel="0"><span class="dot">&#10007;</span><span class="lbl">Cancel<br>trade</span></button>
-      </div>
-      <div class="slots" id="of0"></div>
+    <div class="slots" id="of1"></div>
+    <div class="mid"><span class="rule"></span><span class="arrows">&#8645;</span><span class="rule"></span></div>
+    <div class="slots" id="of0"></div>
+
+    <div class="acts">
+      <button class="act keep" data-keep="0"><span class="dot">&#43;</span><span class="lbl">Keep <br>playing</span></button>
+      <button class="act done" data-done="0" aria-pressed="false"><span class="dot">&#10003;</span><span class="lbl">Yes, <br>finish</span></button>
+      <button class="act no" data-cancel="0"><span class="dot">&#10007;</span><span class="lbl">Cancel <br>trade</span></button>
     </div>
   </section>
 
-  <p class="status" id="status" role="status">Tap your stuff to put it on the table.</p>
+  <p class="status" id="status" role="status">Tap a bin to go find some stuff.</p>
 
   <section class="panel">
     <div class="phead">
@@ -282,54 +372,59 @@ canvas#fx{position:fixed; inset:0; pointer-events:none; z-index:50}
       <input class="who" id="nm0" value="Aria" maxlength="9" aria-label="Bottom trader name">
       <span class="spacer"></span>
       <span class="count" id="ct0"></span>
-      <button class="find" data-find="0">&#10024; Find stuff</button>
     </div>
+    <div class="bins" id="bins0"></div>
     <div class="stash" id="st0"></div>
   </section>
 </div>
 
-<div class="help" id="help" hidden>
-  <div class="sheet" role="dialog" aria-modal="true" aria-label="How to play">
-    <h2>How to play</h2>
-    <div class="rule-row">
-      <span class="mini go">&#10003;</span>
-      <p><b>Keep playing</b><br>Not enough yet &mdash; the other trader should put more stuff down.</p>
-    </div>
-    <div class="rule-row">
-      <span class="mini fin">&#10003;</span>
-      <p><b>Yes, finish</b><br>I'm happy! When <em>both</em> traders tap blue, the stuff swaps.</p>
-    </div>
-    <div class="rule-row">
-      <span class="mini no">&#10007;</span>
-      <p><b>Cancel trade</b><br>Call the whole thing off. Everybody gets their stuff back.</p>
-    </div>
-    <p class="tip">Tap a thing in your stash to put it on the table. Tap it again to take it back.<br><br>
-    <b>&#10024; Find stuff</b> digs up brand new things. Every single one is different &mdash; its own name, its own weird fact, its own star rating and its own number.<br><br>
-    Tap the animal or the name to change who is playing.</p>
-    <button class="close" id="helpClose">Got it!</button>
-  </div>
-</div>
+<!-- one sheet, many jobs -->
+<div class="veil" id="veil" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
 
 <script>
-/* ============ the stuff generator ============ */
-var ADJ = ["Slightly Haunted","Extremely Squishy","Suspiciously Damp","Upside-Down","Mostly Invisible","Left-Handed","Emotionally Complex","Very Loud","Pocket-Sized","Ancient","Off-Brand","Discontinued","Gently Used","Aggressively Purple","Mildly Magnetic","Slow-Motion","Backwards","Screaming","Politely Cursed","Half-Melted","Sentient","Free-Range","Hand-Knitted","Unpredictable","Extra Crunchy","Slippery","Reversible","Overqualified","Undercooked","Time-Traveling","Sleepy","Dramatic","Second-Hand","Enormous","Microscopic","Glow-in-the-Dark","Two-Headed","Rubbery","Slightly Soggy","World-Famous"];
-
-var NOUN = [
-  ["Rubber Duck","🦆"],["Sock","🧦"],["Doorknob","🚪"],["Marble","🔮"],
-  ["Spoon","🥄"],["Ghost","👻"],["Pebble","🪨"],["Traffic Cone","🚧"],
-  ["Pickle","🥒"],["Trophy","🏆"],["Cactus","🌵"],["Umbrella","☂️"],
-  ["Bouncy Ball","🏐"],["Snail","🐌"],["Balloon","🎈"],["Boot","🥾"],
-  ["Lava Lamp","🧪"],["Yo-Yo","🪀"],["Tooth","🦷"],["Wig","💇"],
-  ["Lightbulb","💡"],["Cloud","☁️"],["Mushroom","🍄"],["Dinosaur","🦖"],
-  ["Paperclip","📎"],["Bathtub","🛁"],["Chicken","🐔"],["Wizard Hat","🎩"],
-  ["Sandwich","🥪"],["Robot Arm","🤖"],["Skateboard","🛹"],["Whistle","🎺"],
-  ["Jellyfish","🪼"],["Doorbell","🔔"],["Sticker","⭐"],["Bucket","🪣"],
-  ["Frying Pan","🍳"],["Compass","🧭"],["Cupcake","🧁"],["Ladder","🪜"],
-  ["Penguin","🐧"],["Crystal","💎"],["Banana","🍌"],["Toaster","🍞"],
-  ["Teapot","🫖"],["Beetle","🪲"],["Puzzle Piece","🧩"],["Octopus","🐙"]
+/* =======================================================================
+   BINS - tap a bin, pick a thing. This replaced the old Find stuff button.
+   ======================================================================= */
+var BINS = [
+  {
+    key:"cursed", title:"Cursed Things", icon:"👻", chip:"Cursed",
+    adj:["Cursed","Slightly Haunted","Politely Cursed","Screaming","Whispering","Possessed","Doomed","Definitely Not Haunted","Wailing","Unblinking"],
+    nouns:[["Teapot","🫖"],["Doll","🪆"],["Mirror","🪞"],["Candle","🕯️"],["Music Box","🎵"],["Key","🗝️"],["Painting","🖼️"],["Crown","👑"],["Skull","💀"],["Ring","💍"],["Clock","🕰️"],["Mask","🎭"]],
+    quirks:["Hums when nobody is looking.","Definitely not haunted. Probably.","Screams politely when dropped.","Refuses to be photographed.","Has a tiny door on the back.","Ticks, but is not a clock.","Once won an argument.","Watches you leave the room."]
+  },
+  {
+    key:"squishy", title:"Squishy Things", icon:"🫧", chip:"Squishy",
+    adj:["Extremely Squishy","Rubbery","Bouncy","Squelchy","Jiggly","Wobbly","Overly Soft","Slightly Inflated"],
+    nouns:[["Rubber Duck","🦆"],["Jellyfish","🪼"],["Pillow","🛏️"],["Marshmallow","🍡"],["Sponge","🧽"],["Balloon","🎈"],["Bouncy Ball","🏐"],["Gummy Worm","🪱"],["Stress Ball","🧶"],["Blob","🟢"]],
+    quirks:["Makes a boing noise. Always.","Weighs exactly one hamster.","Cannot be folded. Do not try.","Comes with a very small friend.","Purrs if you are nice to it.","Slightly bigger on the inside.","Bounces higher on Tuesdays."]
+  },
+  {
+    key:"shiny", title:"Shiny Things", icon:"✨", chip:"Shiny",
+    adj:["Extremely Shiny","Glow-in-the-Dark","Sparkling","Blindingly Bright","Freshly Polished","World-Famous","Award-Winning"],
+    nouns:[["Crystal","💎"],["Trophy","🏆"],["Gold Coin","🪙"],["Star Sticker","⭐"],["Disco Ball","🪩"],["Medal","🥇"],["Lightbulb","💡"],["Ring","💍"],["Glitter Jar","🫙"],["Tiara","👑"]],
+    quirks:["Glows a bit in the dark.","Belonged to a famous goose.","Voted Most Likely To Roll Away.","Was a birthday present. Twice.","Blinds one person per week.","Smells like a new notebook."]
+  },
+  {
+    key:"gross", title:"Gross Things", icon:"🤢", chip:"Gross",
+    adj:["Terrible","Suspiciously Damp","Slightly Soggy","Half-Melted","Extra Crunchy","Sticky","Mysteriously Warm","Deeply Unpleasant"],
+    nouns:[["Sock","🧦"],["Tooth","🦷"],["Pickle","🥒"],["Old Sandwich","🥪"],["Mushroom","🍄"],["Slug","🐌"],["Banana Peel","🍌"],["Boot","🥾"],["Wig","💇"],["Chewed Gum","🫧"]],
+    quirks:["Smells faintly of Tuesday.","Found at the bottom of a lake.","Survived three washing machines.","Legally counts as a snack.","Has opinions about soup.","Came free with a sandwich.","Nobody knows what it does."]
+  },
+  {
+    key:"ancient", title:"Ancient Things", icon:"🏺", chip:"Ancient",
+    adj:["Ancient","Very Old","Dusty","Museum-Worthy","Older Than Time","Crumbly","Freshly Dug Up"],
+    nouns:[["Vase","🏺"],["Scroll","📜"],["Compass","🧭"],["Old Coin","🪙"],["Bone","🦴"],["Map","🗺️"],["Lantern","🏮"],["Sword","🗡️"],["Book","📕"],["Pocket Watch","⌚"]],
+    quirks:["Older than your grandma's grandma.","Was once a hat.","Nobody knows what it does.","Has survived several kingdoms.","Found in somebody's attic.","Smells like a very old library."]
+  },
+  {
+    key:"box", title:"Boxes", icon:"📦", chip:"Boxes",
+    adj:["Brand New","Sealed","Genuine","Official","Untouched","Factory-Fresh"],
+    nouns:[["iPhone Box","📱"],["Gift Box","🎁"],["Treasure Chest","🧰"],["Pizza Box","🍕"],["Cereal Box","🥣"],["Shoe Box","👟"],["Lunch Box","🍱"],["Fancy Bag","🛍️"]],
+    quirks:["Looks incredibly valuable.","Definitely worth five stars.","Trust me. It's amazing.","You are going to love this.","Absolutely nothing suspicious here."]
+  }
 ];
-
-var QUIRK = ["Smells faintly of Tuesday.","Hums when nobody is looking.","Came free with a sandwich.","Belonged to a famous goose.","Only works on Wednesdays.","Slightly warm. Nobody knows why.","Has opinions about soup.","Found at the bottom of a lake.","Refuses to be photographed.","Makes a boing noise. Always.","Older than your grandma's grandma.","Definitely not haunted. Probably.","Purrs if you are nice to it.","Was once a hat.","Weighs exactly one hamster.","Glows a bit in the dark.","Cannot be folded. Do not try.","Has a tiny door on the back.","Screams politely when dropped.","Tastes like the colour blue.","Voted Most Likely To Roll Away.","Comes with a very small friend.","Buzzes when a dog walks past.","Legally counts as a snack.","Survived three washing machines.","Ticks, but is not a clock.","Smells like a new notebook.","Slightly bigger on the inside.","Was a birthday present. Twice.","Nobody knows what it does.","Once won an argument.","Best friends with a spoon."];
+var BINMAP = {};
+BINS.forEach(function(b){ BINMAP[b.key] = b; });
 
 var RARITY = [["common",55],["rare",25],["epic",13],["legendary",5],["one-of-a-kind",2]];
 var PIPS = {"common":"★","rare":"★★","epic":"★★★","legendary":"★★★★","one-of-a-kind":"★★★★★"};
@@ -342,32 +437,43 @@ function rollRarity(){
   return "common";
 }
 var serial = 1;
-function makeThing(){
-  var n = pick(NOUN);
+function makeThing(binKey){
+  var b = BINMAP[binKey] || pick(BINS);
+  var n = pick(b.nouns);
+  var isBox = b.key === "box";
   return {
     id: "t" + serial + "-" + Math.random().toString(36).slice(2,7),
     sn: String(serial++).padStart(4,"0"),
-    label: pick(ADJ) + " " + n[0],
+    bin: b.key,
+    label: pick(b.adj) + " " + n[0],
     emo: n[1],
-    quirk: pick(QUIRK),
-    rarity: rollRarity()
+    quirk: pick(b.quirks),
+    /* every box advertises five stars. that is the whole joke. */
+    rarity: isBox ? "one-of-a-kind" : rollRarity(),
+    kind: isBox ? "box" : "thing",
+    contents: null
   };
 }
 
 /* ============ state ============ */
-var KEY = "whatsit-swap-v1";
-var S;
+var KEY = "whatsit-swap-v2";
+var S, binOpen = null, binPlayer = 0, binOffer = [], packing = null;
+
 function fresh(){
   return {
-    serial: 1, sound: true, seenHelp: false,
-    p: [
+    serial:1, sound:true, seenHelp:false,
+    p:[
       {name:"Aria", av:AVS[0], items:[], offer:[], ready:false},
       {name:"Bee",  av:AVS[1], items:[], offer:[], ready:false}
     ]
   };
 }
 function stock(){
-  for (var i=0;i<2;i++) for (var k=0;k<6;k++) S.p[i].items.push(makeThing());
+  var starters = ["cursed","squishy","shiny","gross","ancient","box"];
+  for (var i=0;i<2;i++){
+    for (var k=0;k<5;k++) S.p[i].items.push(makeThing(pick(starters.slice(0,5))));
+    S.p[i].items.push(makeThing("box"));
+  }
 }
 function load(){
   try{
@@ -407,27 +513,72 @@ function beep(freq, dur, type){
 }
 function sTap(){ beep(520,.09); }
 function sBack(){ beep(330,.09); }
-function sMore(){ beep(300,.12,"square"); setTimeout(function(){ beep(230,.16,"square"); },90); }
+function sKeep(){ beep(430,.1); setTimeout(function(){ beep(560,.13); },80); }
 function sYes(){ beep(760,.12); }
 function sTrade(){ [523,659,784,1047].forEach(function(f,i){ setTimeout(function(){ beep(f,.17); }, i*95); }); }
 function sFind(){ [660,880].forEach(function(f,i){ setTimeout(function(){ beep(f,.1); }, i*70); }); }
+function sSeal(){ beep(240,.16,"square"); }
+function sOpen(){ [880,660,440,330].forEach(function(f,i){ setTimeout(function(){ beep(f,.14); }, i*80); }); }
 
-/* ============ render ============ */
+/* ============ pictures ============ */
 function $(id){ return document.getElementById(id); }
-var statusEl = $("status");
-
 function esc(s){
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
-function cardHTML(it, where){
-  return '<button class="card" data-r="' + esc(it.rarity) + '" data-id="' + esc(it.id) + '" data-where="' + where + '" '
-    + 'title="' + (where === "stash" ? "Put it on the table" : "Take it back") + '">'
-    + '<span class="sn">#' + esc(it.sn) + '</span>'
-    + '<span class="emo">' + esc(it.emo) + '</span>'
+var SQUIG = '<svg class="d" viewBox="0 0 100 100">'
+  + '<path d="M4,32 q5,-8 10,0 t10,0"/><path d="M4,64 q5,-8 10,0 t10,0"/>'
+  + '<path d="M76,32 q5,-8 10,0 t10,0"/><path d="M76,64 q5,-8 10,0 t10,0"/></svg>';
+var DRIPS = '<svg class="d" viewBox="0 0 100 100">'
+  + '<path d="M32,74 v10"/><path d="M50,80 v10"/><path d="M68,74 v10"/></svg>';
+var WEB = '<svg class="d" viewBox="0 0 100 100">'
+  + '<path d="M0,0 L34,0 M0,0 L0,34 M0,0 L26,26"/>'
+  + '<path d="M10,0 A10,10 0 0 1 0,10"/><path d="M20,0 A20,20 0 0 1 0,20"/><path d="M30,0 A30,30 0 0 1 0,30"/></svg>';
+var SPARKS = '<i class="spark">&#10022;</i><i class="spark">&#10022;</i><i class="spark">&#10022;</i>';
+
+function picHTML(it){
+  var deco = it.kind === "box" ? "box" : it.bin;
+  var inner = '<span class="glyph">' + esc(it.emo) + '</span>';
+  if (deco === "cursed") inner += SQUIG;
+  else if (deco === "gross") inner += DRIPS;
+  else if (deco === "ancient") inner += WEB;
+  else if (deco === "shiny") inner += SPARKS;
+  else if (deco === "box"){
+    inner += '<i class="tape"></i><i class="tape v"></i>';
+    if (it.contents) inner += '<i class="seal">&#128274;</i>';
+  }
+  return '<span class="pic ' + deco + '">' + inner + '</span>';
+}
+
+/* where: "stash" | "offer" | "pick" | "stuff" */
+function cardHTML(it, where, extra){
+  var badge = "";
+  if (where === "stash" && it.kind === "box"){
+    badge = it.contents
+      ? '<button class="badge open" data-open="' + esc(it.id) + '" title="Open the box" aria-label="Open the box">&#128275;</button>'
+      : '<button class="badge pack" data-pack="' + esc(it.id) + '" title="Put something inside" aria-label="Put something inside">&#43;</button>';
+  }
+  var attr = extra || ('data-id="' + esc(it.id) + '" data-where="' + where + '"');
+  var showQuirk = (where === "pick");
+  return '<div class="cardwrap">'
+    + '<button class="card" data-r="' + esc(it.rarity) + '" ' + attr + '>'
+    + picHTML(it)
     + '<span class="nm">' + esc(it.label) + '</span>'
-    + '<span class="qk">' + esc(it.quirk) + '</span>'
+    + (showQuirk ? '<span class="qk">' + esc(it.quirk) + '</span>' : '')
     + '<span class="pips">' + PIPS[it.rarity] + '</span>'
-    + '</button>';
+    + (where === "stash" ? '<span class="sn">#' + esc(it.sn) + '</span>' : '')
+    + '</button>' + badge + '</div>';
+}
+
+/* ============ render ============ */
+var statusEl = $("status");
+
+function renderBins(){
+  for (var i=0;i<2;i++){
+    $("bins"+i).innerHTML = BINS.map(function(b){
+      return '<button class="bin" data-bin="' + b.key + '" data-player="' + i + '" title="' + b.title + '">'
+        + '<span class="bemo">' + b.icon + '</span>' + b.chip + '</button>';
+    }).join("");
+  }
 }
 
 function render(){
@@ -439,15 +590,18 @@ function render(){
     $("ct"+i).textContent = p.items.length + " thing" + (p.items.length === 1 ? "" : "s");
     $("st"+i).innerHTML = p.items.length
       ? p.items.map(function(it){ return cardHTML(it,"stash"); }).join("")
-      : '<p class="empty">Stash is empty &mdash; tap <b>Find stuff</b>.</p>';
-    $("of"+i).innerHTML = p.offer.length
-      ? p.offer.map(function(it){ return cardHTML(it,"offer"); }).join("")
-      : '<p class="empty">' + esc(p.name) + ' has not put anything down yet.</p>';
+      : '<p class="empty">Nothing yet &mdash; tap a bin up there.</p>';
 
-    var fb = document.querySelector('[data-fin="' + i + '"]');
-    fb.setAttribute("aria-pressed", p.ready ? "true" : "false");
-    fb.querySelector(".lbl").innerHTML = p.ready ? "Happy!" : "Yes,<br>finish";
-    fb.disabled = nothingDown;
+    var slots = $("of"+i);
+    slots.classList.toggle("wide", p.offer.length === 0);
+    slots.innerHTML = p.offer.length
+      ? p.offer.map(function(it){ return cardHTML(it,"offer"); }).join("")
+      : '<p class="empty">' + esc(p.name) + ' has not put anything down.</p>';
+
+    var db = document.querySelector('[data-done="' + i + '"]');
+    db.setAttribute("aria-pressed", p.ready ? "true" : "false");
+    db.querySelector(".lbl").innerHTML = p.ready ? "Happy!" : "Yes, <br>finish";
+    db.disabled = nothingDown;
     document.querySelector('[data-cancel="' + i + '"]').disabled = nothingDown;
   }
   $("snd").textContent = S.sound ? "🔊" : "🔇";
@@ -458,12 +612,74 @@ function say(msg, cls){
   statusEl.textContent = msg;
   statusEl.className = "status " + (cls || "");
   if (cls === "stop"){
-    statusEl.classList.remove("shake");
-    void statusEl.offsetWidth;
-    statusEl.classList.add("shake");
+    statusEl.classList.remove("shake"); void statusEl.offsetWidth; statusEl.classList.add("shake");
   }
 }
 function unready(){ S.p[0].ready = false; S.p[1].ready = false; }
+function findItem(id){
+  for (var i=0;i<2;i++){
+    for (var k=0;k<S.p[i].items.length;k++) if (S.p[i].items[k].id === id) return {p:i, k:k, it:S.p[i].items[k]};
+  }
+  return null;
+}
+function article(w){ return /^[AEIOU]/.test(w) ? "an " : "a "; }
+
+/* ============ sheets ============ */
+function openSheet(html){ $("sheet").innerHTML = html; $("veil").hidden = false; }
+function closeSheet(){ $("veil").hidden = true; binOpen = null; packing = null; }
+
+function showBin(key, player){
+  binOpen = key; binPlayer = player;
+  var b = BINMAP[key];
+  binOffer = []; for (var i=0;i<6;i++) binOffer.push(makeThing(key));
+  drawBin();
+  sFind();
+}
+function drawBin(){
+  var b = BINMAP[binOpen];
+  openSheet(
+    '<h2>' + b.icon + ' ' + b.title + '</h2>'
+    + '<p class="sub">Tap something to give it to <b>' + esc(S.p[binPlayer].name) + '</b>.</p>'
+    + '<div class="pickgrid">'
+    + binOffer.map(function(it,i){ return cardHTML(it,"pick",'data-take="' + i + '"'); }).join("")
+    + '</div>'
+    + '<div class="row">'
+    + '<button class="btn ghost" id="binShuffle">&#127922; Different stuff</button>'
+    + '<button class="btn" id="sheetDone">Done</button></div>'
+  );
+}
+
+function showPack(boxId){
+  var f = findItem(boxId); if (!f) return;
+  packing = {boxId:boxId, player:f.p};
+  var mine = S.p[f.p].items.filter(function(x){ return x.kind !== "box"; });
+  openSheet(
+    '<h2>&#128230; What goes in the box?</h2>'
+    + '<p class="sub">Nobody can see inside once it is shut. The box still says '
+    + '<b>&#9733;&#9733;&#9733;&#9733;&#9733;</b> on the outside.</p>'
+    + (mine.length
+        ? '<div class="pickgrid">' + mine.map(function(it){ return cardHTML(it,"pick",'data-stuff="' + esc(it.id) + '"'); }).join("") + '</div>'
+        : '<p class="sub">You have nothing to put in it yet. Go grab something from a bin.</p>')
+    + '<button class="btn ghost" id="sheetDone">Leave it empty</button>'
+  );
+}
+
+function showReveal(it, opener, boxLabel){
+  var inside = it.contents;
+  var body;
+  if (inside){
+    body = '<div class="big">' + picHTML(inside) + '</div>'
+      + '<p class="verdict">' + esc(opener) + ' opened the ' + esc(boxLabel) + '...<br>it was '
+      + article(inside.label) + '<b>' + esc(inside.label) + '</b>!</p>'
+      + '<p class="stars" style="color:var(--r-' + (inside.rarity === "one-of-a-kind" ? "oneof" : inside.rarity.slice(0,6)) + ')">'
+      + PIPS[inside.rarity] + '</p>';
+  } else {
+    body = '<div class="big"><span class="pic box"><span class="glyph">&#128229;</span></span></div>'
+      + '<p class="verdict">' + esc(opener) + ' opened the ' + esc(boxLabel) + '...<br>completely empty.</p>'
+      + '<p class="stars" style="color:var(--ink-2)">Classic.</p>';
+  }
+  openSheet('<div class="reveal">' + body + '<button class="btn" id="sheetDone">Ha!</button></div>');
+}
 
 /* ============ actions ============ */
 function moveCard(id, where){
@@ -488,43 +704,93 @@ function tryTrade(){
   if (!S.p[0].ready || !S.p[1].ready) return false;
   var a = S.p[0], b = S.p[1];
   var n = a.offer.length + b.offer.length;
+  var boxes = a.offer.concat(b.offer).filter(function(x){ return x.kind === "box" && x.contents; }).length;
   a.items = a.items.concat(b.offer);
   b.items = b.items.concat(a.offer);
   a.offer = []; b.offer = []; unready();
-  render();
-  sTrade(); confetti();
+  render(); sTrade(); confetti();
   var t = $("table"); t.classList.remove("flash"); void t.offsetWidth; t.classList.add("flash");
-  say("🤝 Traded! " + n + " thing" + (n === 1 ? "" : "s") + " swapped. Check your stash!", "fin");
+  say("🤝 Traded! " + n + " thing" + (n === 1 ? "" : "s") + " swapped."
+      + (boxes ? " Somebody got a box... better open it. 👀" : " Check your stash!"), "done");
   return true;
 }
 
 document.addEventListener("click", function(e){
-  if (e.target.closest("#helpClose") || e.target.id === "help"){
-    $("help").hidden = true; S.seenHelp = true; save(); return;
+  /* ---- sheets ---- */
+  if (e.target.closest("#sheetDone") || e.target.id === "veil"){ closeSheet(); sTap(); return; }
+  if (e.target.closest("#binShuffle")){
+    binOffer = []; for (var q=0;q<6;q++) binOffer.push(makeThing(binOpen));
+    drawBin(); sFind(); return;
   }
-  if (e.target.closest("#hlp")){ $("help").hidden = false; return; }
+  var take = e.target.closest("[data-take]");
+  if (take){
+    var ti = +take.getAttribute("data-take"), got = binOffer[ti];
+    S.p[binPlayer].items.push(got);
+    binOffer[ti] = makeThing(binOpen);
+    drawBin(); render(); sFind();
+    say("✨ " + S.p[binPlayer].name + " got " + article(got.label) + got.label + "!");
+    return;
+  }
+  var stuff = e.target.closest("[data-stuff]");
+  if (stuff && packing){
+    var sid = stuff.getAttribute("data-stuff");
+    var fi = findItem(sid), box = findItem(packing.boxId);
+    if (fi && box){
+      box.it.contents = S.p[fi.p].items.splice(fi.k,1)[0];
+      closeSheet(); render(); sSeal();
+      say("🤫 " + S.p[box.p].name + " sealed something inside the " + box.it.label + ".");
+    }
+    return;
+  }
+  var packBtn = e.target.closest("[data-pack]");
+  if (packBtn){ showPack(packBtn.getAttribute("data-pack")); sTap(); return; }
 
-  var card = e.target.closest(".card");
-  if (card){ moveCard(card.getAttribute("data-id"), card.getAttribute("data-where")); return; }
-
-  /* green check - keep playing, ask for more */
-  var go = e.target.closest("[data-go]");
-  if (go){
-    var gi = +go.getAttribute("data-go");
-    unready(); render(); sMore();
-    say("👉 " + S.p[gi].name + " wants to keep playing. Put more stuff down, " + S.p[1-gi].name + "!", "go");
+  var openBtn = e.target.closest("[data-open]");
+  if (openBtn){
+    var of = findItem(openBtn.getAttribute("data-open"));
+    if (of){
+      var inside = of.it.contents, boxLabel = of.it.label;
+      of.it.contents = null;
+      if (inside) S.p[of.p].items.push(inside);
+      render(); sOpen();
+      showReveal({contents:inside}, S.p[of.p].name, boxLabel);
+      if (inside) confetti();
+      say(inside
+        ? "😱 " + S.p[of.p].name + " opened the " + boxLabel + " - it was " + article(inside.label) + inside.label + "! " + PIPS[inside.rarity]
+        : "📭 " + S.p[of.p].name + " opened the " + boxLabel + " - empty. Classic.", "stop");
+    }
     return;
   }
 
-  /* blue check - yes, finish */
-  var fin = e.target.closest("[data-fin]");
-  if (fin){
-    var ri = +fin.getAttribute("data-fin"), p = S.p[ri];
+  var binBtn = e.target.closest("[data-bin]");
+  if (binBtn){ showBin(binBtn.getAttribute("data-bin"), +binBtn.getAttribute("data-player")); return; }
+
+  if (e.target.closest("#hlp")){ showHelp(); return; }
+
+  /* ---- the table ---- */
+  var card = e.target.closest(".card");
+  if (card && card.hasAttribute("data-where")){
+    moveCard(card.getAttribute("data-id"), card.getAttribute("data-where")); return;
+  }
+
+  /* blue plus - keep playing */
+  var keep = e.target.closest("[data-keep]");
+  if (keep){
+    var gi = +keep.getAttribute("data-keep");
+    unready(); render(); sKeep();
+    say("➕ " + S.p[gi].name + " wants to keep playing. Put more stuff down, " + S.p[1-gi].name + "!", "keep");
+    return;
+  }
+
+  /* green check - yes, finish */
+  var done = e.target.closest("[data-done]");
+  if (done){
+    var ri = +done.getAttribute("data-done"), p = S.p[ri];
     p.ready = !p.ready;
     render();
     if (!p.ready){ sBack(); say(p.name + " is not finished after all."); return; }
     sYes();
-    if (!tryTrade()) say("💙 " + p.name + " is ready to finish. Waiting on " + S.p[1-ri].name + "...", "fin");
+    if (!tryTrade()) say("💚 " + p.name + " is ready to finish. Waiting on " + S.p[1-ri].name + "...", "done");
     return;
   }
 
@@ -538,23 +804,11 @@ document.addEventListener("click", function(e){
     return;
   }
 
-  var find = e.target.closest("[data-find]");
-  if (find){
-    var fi = +find.getAttribute("data-find");
-    var howMany = 1 + Math.floor(Math.random()*2), first = null;
-    for (var k=0;k<howMany;k++){ var t2 = makeThing(); S.p[fi].items.push(t2); if (!first) first = t2; }
-    render(); sFind();
-    var article = /^[AEIOU]/.test(first.label) ? "an " : "a ";
-    say("✨ " + S.p[fi].name + " found " + article + first.label + "!" + (howMany > 1 ? " (and one more thing)" : ""));
-    return;
-  }
-
   if (e.target.closest("#snd")){ S.sound = !S.sound; render(); if (S.sound) sTap(); return; }
 
   if (e.target.closest("#rst")){
     if (!confirm("Start over? Everybody gets brand new stuff.")) return;
-    var names = [S.p[0].name, S.p[1].name];
-    var seen = S.seenHelp;
+    var names = [S.p[0].name, S.p[1].name], seen = S.seenHelp;
     S = fresh(); serial = 1; S.seenHelp = seen;
     S.p[0].name = names[0]; S.p[1].name = names[1];
     S.p[0].av = pick(AVS);
@@ -571,6 +825,26 @@ document.addEventListener("click", function(e){
     render(); sTap();
   }
 });
+
+function showHelp(){
+  openSheet(
+    '<h2>How to play</h2>'
+    + '<div class="rule-row"><span class="mini keep">&#43;</span>'
+    + '<p><b>Keep playing</b><br>Not enough yet &mdash; the other trader should put more stuff down.</p></div>'
+    + '<div class="rule-row"><span class="mini done">&#10003;</span>'
+    + '<p><b>Yes, finish</b><br>I am happy! When <em>both</em> traders tap green, the stuff swaps.</p></div>'
+    + '<div class="rule-row"><span class="mini no">&#10007;</span>'
+    + '<p><b>Cancel trade</b><br>Call the whole thing off. Everybody gets their stuff back.</p></div>'
+    + '<p class="tip"><b>Finding stuff:</b> tap a bin &mdash; Cursed, Squishy, Shiny, Gross, Ancient, Boxes &mdash; '
+    + 'then tap the thing you want.<br><br>'
+    + '<b>&#128230; Boxes are sneaky.</b> Every box says &#9733;&#9733;&#9733;&#9733;&#9733; on the outside. '
+    + 'Tap the little <b>+</b> on a box in your stash to hide something inside it, then trade the box. '
+    + 'Whoever gets it taps the <b>&#128275;</b> to open it &mdash; and finds out what is <em>really</em> in there.<br><br>'
+    + 'Tap the animal or the name to change who is playing.</p>'
+    + '<button class="btn" id="sheetDone">Got it!</button>'
+  );
+  S.seenHelp = true; save();
+}
 
 for (var i=0;i<2;i++){
   (function(i){
@@ -624,8 +898,9 @@ function tick(){
 }
 
 load();
+renderBins();
 render();
-if (!S.seenHelp) $("help").hidden = false;
+if (!S.seenHelp) showHelp();
 </script>
 </body>
 </html>
