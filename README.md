@@ -17,15 +17,25 @@ Each trader gets three round buttons:
 - **Red circle, X - Cancel trade** - call the whole thing off, everybody gets
   their stuff back.
 
+## Sit across from each other
+
+With two players the far half of the screen - their panel, their buttons and
+their side of the table - is rotated 180 degrees. Lay the phone flat between you
+and each player reads their own side the right way up, the way cards sit on a
+real table. Playing the robot turns the rotation off.
+
 ## Finding stuff
 
-There is no generic "find stuff" button. There are six **bins**, and you tap the
-one you want to dig through:
+There is no generic "find stuff" button, and nothing pops up over the game. Each
+player has their own row of bins:
 
-Cursed - Squishy - Shiny - Gross - Ancient - Boxes
+My stuff - Cursed - Squishy - Shiny - Gross - Ancient - Boxes
 
-Each bin shows six things to choose from, and every thing is drawn as a little
-picture: a cursed teapot has squiggly lines coming off it, shiny things sparkle,
+Tap a bin and *your own strip* fills with eight things from it. Tap what you
+want and it goes straight into your stash, tap **More** for a different lot, and
+**My stuff** to go back to what you own. Each player browses independently.
+
+Every thing is drawn as a little picture: a cursed teapot has squiggly lines coming off it, shiny things sparkle,
 squishy things wobble, gross things drip, ancient things are sepia and cobwebbed.
 
 ## Boxes are a scam

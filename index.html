@@ -313,6 +313,20 @@ canvas#fx{position:fixed; inset:0; pointer-events:none; z-index:80}
 .reveal .verdict{font-size:13px; font-weight:900; margin:0 0 3px; line-height:1.3}
 .reveal .stars{font-size:15px; font-weight:900; letter-spacing:.1em; margin:0 0 10px}
 
+/* ---------- sitting across the phone: the far player's half is turned round ---------- */
+.flip{transform:rotate(180deg)}
+
+/* ---------- a bin opens in the player's own strip, not in a window ---------- */
+.bin.on{background:var(--pop); color:#FFFFFF; border-color:var(--pop)}
+.bin.shuffle{background:var(--surface)}
+.stash.shopping{
+  background:var(--sunk); border-radius:10px; padding:5px; margin:0;
+  box-shadow:inset 0 0 0 2px var(--line);
+}
+.stash .qk{display:none}
+.card.got{animation:got .45s ease-out}
+@keyframes got{0%{box-shadow:0 0 0 0 var(--pop)}40%{box-shadow:0 0 0 4px var(--pop)}100%{box-shadow:0 0 0 0 transparent}}
+
 /* ---------- robot opponent ---------- */
 .panel.robot{flex:none}
 .hand{
@@ -497,7 +511,7 @@ function makeThing(binKey){
 
 /* ============ state ============ */
 var KEY = "whatsit-swap-v2";
-var S, binOpen = null, binPlayer = 0, binOffer = [], packing = null;
+var S, packing = null, view = [null, null], offers = [[], []];
 
 function fresh(){
   return {
@@ -614,11 +628,30 @@ var statusEl = $("status");
 
 function renderBins(){
   for (var i=0;i<2;i++){
-    $("bins"+i).innerHTML = BINS.map(function(b){
-      return '<button class="bin" data-bin="' + b.key + '" data-player="' + i + '" title="' + b.title + '">'
-        + '<span class="bemo">' + b.icon + '</span>' + b.chip + '</button>';
-    }).join("");
+    (function(i){
+      var html = '<button class="bin' + (view[i] === null ? ' on' : '') + '" data-bin="mine" data-player="' + i + '" title="Your own stuff">'
+        + '<span class="bemo">&#127890;</span>My stuff</button>';
+      html += BINS.map(function(b){
+        return '<button class="bin' + (view[i] === b.key ? ' on' : '') + '" data-bin="' + b.key + '" data-player="' + i + '" title="' + b.title + '">'
+          + '<span class="bemo">' + b.icon + '</span>' + b.chip + '</button>';
+      }).join("");
+      if (view[i]) html += '<button class="bin shuffle" data-bin="shuffle" data-player="' + i + '" title="Different stuff">'
+        + '<span class="bemo">&#127922;</span>More</button>';
+      $("bins"+i).innerHTML = html;
+    })(i);
   }
+}
+function restock(i){
+  offers[i] = [];
+  for (var k=0;k<8;k++) offers[i].push(makeThing(view[i]));
+}
+function setView(i, key){
+  view[i] = key;
+  if (key) restock(i);
+  renderBins(); render(); sFind();
+  say(key
+    ? "🧺 " + S.p[i].name + " is digging through " + BINMAP[key].title + ". Tap what you want."
+    : S.p[i].name + " is back to their own stuff.");
 }
 
 function render(){
@@ -627,8 +660,16 @@ function render(){
     var p = S.p[i];
     if ($("nm"+i) !== document.activeElement) $("nm"+i).value = p.name;
     $("av"+i).textContent = p.av;
-    $("ct"+i).textContent = p.items.length + " thing" + (p.items.length === 1 ? "" : "s");
-    if (S.bot && i === 1){
+    $("ct"+i).textContent = (view[i] && !(S.bot && i === 1))
+      ? BINMAP[view[i]].icon + " " + BINMAP[view[i]].title
+      : p.items.length + " thing" + (p.items.length === 1 ? "" : "s");
+    if (view[i] !== null && !(S.bot && i === 1)){
+      /* this player is browsing a bin - it takes over their own strip */
+      $("st"+i).className = "stash shopping";
+      $("st"+i).innerHTML = offers[i].map(function(it,ix){
+        return cardHTML(it, "pick", 'data-take="' + ix + '" data-player="' + i + '"');
+      }).join("");
+    } else if (S.bot && i === 1){
       /* she does not get to see what the robot is holding */
       var shown = Math.min(p.items.length, 7);
       var backs = "";
@@ -661,6 +702,11 @@ function render(){
   document.querySelectorAll(".panel")[0].classList.toggle("robot", S.bot);
   $("bins1").hidden = S.bot;
   $("nm1").disabled = S.bot;
+  /* two players sit across the phone, so the far half is turned upside down */
+  var across = !S.bot;
+  document.querySelectorAll(".panel")[0].classList.toggle("flip", across);
+  document.querySelectorAll(".acts")[0].classList.toggle("flip", across);
+  $("of1").classList.toggle("flip", across);
   save();
 }
 
@@ -682,28 +728,9 @@ function article(w){ return /^[AEIOU]/.test(w) ? "an " : "a "; }
 
 /* ============ sheets ============ */
 function openSheet(html){ $("sheet").innerHTML = html; $("veil").hidden = false; }
-function closeSheet(){ $("veil").hidden = true; binOpen = null; packing = null; }
+function closeSheet(){ $("veil").hidden = true; packing = null; }
 
-function showBin(key, player){
-  binOpen = key; binPlayer = player;
-  var b = BINMAP[key];
-  binOffer = []; for (var i=0;i<6;i++) binOffer.push(makeThing(key));
-  drawBin();
-  sFind();
-}
-function drawBin(){
-  var b = BINMAP[binOpen];
-  openSheet(
-    '<h2>' + b.icon + ' ' + b.title + '</h2>'
-    + '<p class="sub">Tap something to give it to <b>' + esc(S.p[binPlayer].name) + '</b>.</p>'
-    + '<div class="pickgrid">'
-    + binOffer.map(function(it,i){ return cardHTML(it,"pick",'data-take="' + i + '"'); }).join("")
-    + '</div>'
-    + '<div class="row">'
-    + '<button class="btn ghost" id="binShuffle">&#127922; Different stuff</button>'
-    + '<button class="btn" id="sheetDone">Done</button></div>'
-  );
-}
+
 
 function showPack(boxId){
   var f = findItem(boxId); if (!f) return;
@@ -774,17 +801,16 @@ function tryTrade(){
 document.addEventListener("click", function(e){
   /* ---- sheets ---- */
   if (e.target.closest("#sheetDone") || e.target.id === "veil"){ closeSheet(); sTap(); return; }
-  if (e.target.closest("#binShuffle")){
-    binOffer = []; for (var q=0;q<6;q++) binOffer.push(makeThing(binOpen));
-    drawBin(); sFind(); return;
-  }
   var take = e.target.closest("[data-take]");
   if (take){
-    var ti = +take.getAttribute("data-take"), got = binOffer[ti];
-    S.p[binPlayer].items.push(got);
-    binOffer[ti] = makeThing(binOpen);
-    drawBin(); render(); sFind();
-    say("✨ " + S.p[binPlayer].name + " got " + article(got.label) + got.label + "!");
+    var tp = +take.getAttribute("data-player"), ti = +take.getAttribute("data-take");
+    var got = offers[tp][ti];
+    S.p[tp].items.push(got);
+    offers[tp][ti] = makeThing(view[tp]);
+    render(); sFind();
+    var fresh = document.querySelector('#st' + tp + ' [data-take="' + ti + '"]');
+    if (fresh) fresh.classList.add("got");
+    say("✨ " + S.p[tp].name + " got " + article(got.label) + got.label + "!");
     return;
   }
   var stuff = e.target.closest("[data-stuff]");
@@ -820,7 +846,13 @@ document.addEventListener("click", function(e){
   }
 
   var binBtn = e.target.closest("[data-bin]");
-  if (binBtn){ showBin(binBtn.getAttribute("data-bin"), +binBtn.getAttribute("data-player")); return; }
+  if (binBtn){
+    var bp = +binBtn.getAttribute("data-player"), bk = binBtn.getAttribute("data-bin");
+    if (bk === "mine") setView(bp, null);
+    else if (bk === "shuffle"){ restock(bp); render(); sFind(); }
+    else setView(bp, bk);
+    return;
+  }
 
   if (e.target.closest("#hlp")){ showHelp(); return; }
 
@@ -872,6 +904,7 @@ document.addEventListener("click", function(e){
     /* everything on the table goes home before the opponent changes */
     for (var z=0;z<2;z++){ S.p[z].items = S.p[z].items.concat(S.p[z].offer); S.p[z].offer = []; }
     unready(); botNags = 0; clearTimeout(botTimer); $("think").hidden = true;
+    view = [null, null]; renderBins();
     S.bot = !S.bot;
     if (S.bot){
       S.humanName = S.p[1].name === "Robo" ? (S.humanName || "Bee") : S.p[1].name;
@@ -918,7 +951,8 @@ function showHelp(){
     + '<div class="rule-row"><span class="mini no">&#10007;</span>'
     + '<p><b>Cancel trade</b><br>Call the whole thing off. Everybody gets their stuff back.</p></div>'
     + '<p class="tip"><b>Finding stuff:</b> tap a bin &mdash; Cursed, Squishy, Shiny, Gross, Ancient, Boxes &mdash; '
-    + 'then tap the thing you want.<br><br>'
+    + 'and your own row fills up with things to choose from. Tap what you want, &#127922; More for a different lot, &#127890; My stuff to go back.<br><br>'
+    + '<b>Two players?</b> The far half of the screen is upside down on purpose, so you can lay the phone flat between you and both read your own side.<br><br>'
     + '<b>&#128230; Boxes are sneaky.</b> Every box says &#9733;&#9733;&#9733;&#9733;&#9733; on the outside. '
     + 'Tap the little <b>+</b> on a box in your stash to hide something inside it, then trade the box. '
     + 'Whoever gets it taps the <b>&#128275;</b> to open it &mdash; and finds out what is <em>really</em> in there.<br><br>'
